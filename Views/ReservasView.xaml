@@ -1,0 +1,190 @@
+﻿<UserControl x:Class="DriveNow.Views.ReservasView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#0F172A">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Encabezado -->
+            <RowDefinition Height="Auto"/>
+            <!-- Formulario Crear Reserva + Tablero Ocupación -->
+            <RowDefinition Height="*"/>
+            <!-- Tabla de Reservas Registradas -->
+        </Grid.RowDefinitions>
+
+        <!-- ENCABEZADO -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="Gestión de reservas" FontSize="22" FontWeight="Bold" Foreground="White"/>
+            <TextBlock Text="Administra el flujo de reservas y disponibilidad de vehículos." FontSize="13" Foreground="#94A3B8"/>
+        </StackPanel>
+
+        <!-- BLOQUE SUPERIOR (Crear Reserva + Tablero Disponibilidad) -->
+        <Grid Grid.Row="1" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.3*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- FORMULARIO CREAR RESERVA -->
+            <Border Grid.Column="0" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="📝 Crear reserva" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+
+                    <!-- Búsqueda / DNI del Cliente -->
+                    <TextBlock Text="Cliente (DNI o Nombre)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="txtDniCliente" Grid.Column="0" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                        <Button x:Name="btnBuscarClienteReserva" Grid.Column="1" Content="Validar" Width="70" Height="35" 
+                                Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnBuscarClienteReserva_Click"/>
+                    </Grid>
+                    <TextBlock x:Name="lblClienteSeleccionado" Text="Cliente: No seleccionado" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10"/>
+
+                    <!-- Fechas Inicio y Fin -->
+                    <UniformGrid Columns="2" Margin="0,0,0,10">
+                        <StackPanel Margin="0,0,5,0">
+                            <TextBlock Text="Fecha de Inicio" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <DatePicker x:Name="dpFechaInicio" Height="35" SelectedDateChanged="dpFechas_SelectedDateChanged"/>
+                        </StackPanel>
+                        <StackPanel Margin="5,0,0,0">
+                            <TextBlock Text="Fecha de Fin" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <DatePicker x:Name="dpFechaFin" Height="35" SelectedDateChanged="dpFechas_SelectedDateChanged"/>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <!-- Categoría y Vehículo Específico -->
+                    <UniformGrid Columns="2" Margin="0,0,0,15">
+                        <StackPanel Margin="0,0,5,0">
+                            <TextBlock Text="Categoría" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="cmbCategoriaReserva" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6"
+                                      SelectionChanged="cmbCategoriaReserva_SelectionChanged">
+                                <ComboBoxItem Content="Todas" IsSelected="True"/>
+                                <ComboBoxItem Content="Compacto"/>
+                                <ComboBoxItem Content="Sedán"/>
+                                <ComboBoxItem Content="Pickup"/>
+                                <ComboBoxItem Content="SUV"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Margin="5,0,0,0">
+                            <TextBlock Text="Vehículo Específico" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="cmbVehiculosDisponibles" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6"/>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <!-- Botones de Acción -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Cancelar" Width="90" Height="35" Background="#334155" Foreground="White" 
+                                BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" Click="btnCancelarReserva_Click"/>
+                        <Button Content="Confirmar Reserva" Width="140" Height="35" Background="#2563EB" Foreground="White" 
+                                FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnConfirmarReserva_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- TABLERO DE DISPONIBILIDAD -->
+            <Border Grid.Column="1" Background="#1E293B" CornerRadius="8" Padding="15" Margin="8,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="📊 Tablero de disponibilidad" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+
+                    <!-- Widget Circular / KPI de Ocupación -->
+                    <Border Background="#0F172A" CornerRadius="8" Padding="15" Margin="0,0,0,15" HorizontalAlignment="Center" Width="140">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock x:Name="lblPorcentajeOcupacion" Text="51%" FontSize="28" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Ocupación" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Desglose por Categorías -->
+                    <TextBlock Text="Disponibilidad por Categoría" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" Margin="0,0,0,8"/>
+
+                    <StackPanel Margin="0,0,0,8">
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="Compactos" Foreground="White" FontSize="12" DockPanel.Dock="Left"/>
+                            <TextBlock x:Name="lblDispCompactos" Text="8/10" Foreground="#38BDF8" FontSize="12" DockPanel.Dock="Right"/>
+                        </DockPanel>
+                        <ProgressBar x:Name="pbCompactos" Height="6" Value="80" Foreground="#38BDF8" Background="#0F172A" BorderThickness="0" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,0,8">
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="Sedanes" Foreground="White" FontSize="12" DockPanel.Dock="Left"/>
+                            <TextBlock x:Name="lblDispSedanes" Text="6/10" Foreground="#4ADE80" FontSize="12" DockPanel.Dock="Right"/>
+                        </DockPanel>
+                        <ProgressBar x:Name="pbSedanes" Height="6" Value="60" Foreground="#4ADE80" Background="#0F172A" BorderThickness="0" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,0,8">
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="Pickups" Foreground="White" FontSize="12" DockPanel.Dock="Left"/>
+                            <TextBlock x:Name="lblDispPickups" Text="4/10" Foreground="#FBBF24" FontSize="12" DockPanel.Dock="Right"/>
+                        </DockPanel>
+                        <ProgressBar x:Name="pbPickups" Height="6" Value="40" Foreground="#FBBF24" Background="#0F172A" BorderThickness="0" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel>
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="SUVs" Foreground="White" FontSize="12" DockPanel.Dock="Left"/>
+                            <TextBlock x:Name="lblDispSUVs" Text="3/5" Foreground="#A78BFA" FontSize="12" DockPanel.Dock="Right"/>
+                        </DockPanel>
+                        <ProgressBar x:Name="pbSUVs" Height="6" Value="60" Foreground="#A78BFA" Background="#0F172A" BorderThickness="0" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- TABLA DE RESERVAS REGISTRADAS -->
+        <Border Grid.Row="2" Background="#1E293B" CornerRadius="8" Padding="15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Reservas registradas" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+
+                <DataGrid x:Name="dgvReservas" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
+                          Background="Transparent" BorderThickness="0" RowHeight="45"
+                          HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single"
+                          Foreground="White" RowBackground="#1E293B" AlternatingRowBackground="#182234">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#0F172A"/>
+                            <Setter Property="Foreground" Value="#94A3B8"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Height" Value="38"/>
+                            <Setter Property="Padding" Value="10,0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="10,0"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="CÓDIGO" Binding="{Binding CodigoReserva}" Width="100" FontWeight="Bold"/>
+                        <DataGridTextColumn Header="CLIENTE" Binding="{Binding NombreCliente}" Width="1.4*"/>
+                        <DataGridTextColumn Header="VEHÍCULO" Binding="{Binding VehiculoDetalle}" Width="1.5*"/>
+                        <DataGridTextColumn Header="PERÍODO" Binding="{Binding PeriodoTexto}" Width="160"/>
+                        <DataGridTextColumn Header="ESTADO" Binding="{Binding Estado}" Width="100"/>
+
+                        <!-- Cancelar Reserva -->
+                        <DataGridTemplateColumn Header="ACCIÓN" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="❌" ToolTip="Cancelar Reserva" Background="Transparent" Foreground="#F87171" 
+                                            BorderThickness="0" Cursor="Hand" Click="btnCancelarReservaFila_Click"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

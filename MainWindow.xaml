@@ -1,0 +1,90 @@
+﻿<Window x:Class="DriveNow.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Drive Now - Panel de Administración" 
+        Height="900" Width="1600"
+        WindowStartupLocation="CenterScreen"
+        Background="#0F172A">
+
+    <Window.Resources>
+        <!-- Estilo base para todos los botones del menú -->
+        <Style TargetType="Button">
+            <!-- 1. Movemos los valores por defecto aquí -->
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Margin" Value="12,4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Style.Triggers>
+                <!-- 2. Al pasar el mouse por encima -->
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E0F2FE"/>
+                    <!-- Fondo celeste claro -->
+                    <Setter Property="Foreground" Value="Black"/>
+                    <!-- Texto Negro -->
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- dividimos en dos columnas: el menu lateral (240px) y area central (el resto del area disponible) -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- sidebar -->
+        <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,1,0">
+            <DockPanel LastChildFill="False">
+
+                <!-- logo y titulo superior -->
+                <StackPanel DockPanel.Dock="Top" Margin="20,25,20,30">
+                    <TextBlock Text="Drive Now" FontSize="24" FontWeight="Bold" Foreground="#38BDF8"/>
+                    <TextBlock Text="Panel de Administración" FontSize="12" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Botones de Navegación -->
+                <StackPanel DockPanel.Dock="Top">
+                    <Button x:Name="btnNavDashboard" Content="📊  Dashboard" 
+                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
+                            FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="btnNavDashboard_Click"/>
+
+                    <Button x:Name="btnNavFlota" Content="🚗  Gestión de Flota" 
+                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
+                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnNavFlota_Click"/>
+
+                    <Button x:Name="btnNavClientes" Content="👥  Gestión de Clientes" 
+                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
+                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnNavClientes_Click"/>
+
+                    <Button x:Name="btnNavReservas" Content="📅  Gestión de Reservas"  
+                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
+                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnNavReservas_Click"/>
+
+                    <Button x:Name="btnNavAlquileres" Content="🔑  Gestión de Alquileres" 
+                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
+                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnNavAlquileres_Click"/>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Bottom">
+                    <Button x:Name="btnAdminPerfil" Content="👤  Cuenta"
+                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0" 
+                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnAdminPerfil_Click"/>
+                    <Button x:Name="btnCerrarSesion" Content="⬅️  Cerrar Sesion"
+                                    Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0" 
+                                    FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnCerrarSesion_Click"/>
+                </StackPanel>
+
+            </DockPanel>
+        </Border>
+
+        <!-- CONTENEDOR CENTRAL DINÁMICO -->
+        <ContentControl x:Name="ContenedorPrincipal" Grid.Column="1" Margin="20"/>
+
+    </Grid>
+</Window>
