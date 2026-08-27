@@ -6,11 +6,11 @@ namespace DriveNow.Models
     {
         public int IdReserva { get; set; }
         public string CodigoReserva { get; set; } = string.Empty; // Ej: "RES-1001" / Debera ser generado automaticamente, partiendo de 'AAA-0000'
-        public string DniCliente { get; set; } = string.Empty;
-        public string NombreCliente { get; set; } = string.Empty;
-        public string PatenteVehiculo { get; set; } = string.Empty;
+        public string DniCliente { get; set; } = string.Empty; // Recibe Cliente.DniCliente
+        public string NombreCliente { get; set; } = string.Empty; // recibe Cliente.NombreCompleto
+        public string PatenteVehiculo { get; set; } = string.Empty; // recibe Vehiculo.Patente
         public string VehiculoDetalle { get; set; } = string.Empty; // Ej: "Toyota Corolla (Sedán)"
-        public string Categoria { get; set; } = string.Empty;
+        public string Categoria { get; set; } = string.Empty; // recibe Categoria.IdCategoria
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }
         public string Estado { get; set; } = "Activa"; // "Activa", "Pendiente", "Cancelada", "En Curso"

@@ -12,8 +12,8 @@ namespace DriveNow.Views
         // Usuarios iniciales en memoria para pruebas
         private static List<Usuario> usuariosRegistrados = new List<Usuario>
         {
-            new Usuario { IdUsuario = 1, NombreCompleto = "Admin", Email = "admin@drivenow.com", Password = "123", Rol = "Administrador" },
-            new Usuario { IdUsuario = 2, NombreCompleto = "Operador", Email = "operador@drivenow.com", Password = "123", Rol = "Operador" }
+            new Usuario { IdUsuario = 1, NombreCompleto = "Admin", Email = "admin@gmail.com", Password = "123ABC", Rol = "Administrador" },
+            new Usuario { IdUsuario = 2, NombreCompleto = "Franco Montecino", Email = "frannm1703@gmail.com", Password = "toby91218", Rol = "Operador" }
         };
 
         // Variable global/estática para conocer el usuario autenticado en toda la app
@@ -22,8 +22,8 @@ namespace DriveNow.Views
         public LoginView()
         {
             InitializeComponent();
-            txtLoginEmail.Text = "admin@drivenow.com";
-            txtLoginPass.Password = "123";
+            txtLoginEmail.Text = "frannm1703@gmail.com";
+            txtLoginPass.Password = "toby91218";
         }
 
         private void btnIniciarSesion_Click(object sender, RoutedEventArgs e)
@@ -44,11 +44,11 @@ namespace DriveNow.Views
             {
                 UsuarioActual = usuario;
 
-                // 1. Instanciamos la ventana principal
+                // 1. Si el usuario logra loguearse, instanciamos la ventana princial del dashboard
                 MainWindow main = new MainWindow();
                 main.Show();
 
-                // 2. Cerramos la ventana de Login
+                // 2. Y cerramos la ventana de login
                 this.Close();
             }
             else
@@ -59,6 +59,7 @@ namespace DriveNow.Views
 
         private void btnRegistrarUsuario_Click(object sender, RoutedEventArgs e)
         {
+
             string nombre = txtRegNombre.Text.Trim();
             string email = txtRegEmail.Text.Trim();
             string pass = txtRegPass.Password.Trim();

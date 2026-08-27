@@ -8,7 +8,7 @@ namespace DriveNow.Models
         public string Dni { get; set; } = string.Empty; // Solo numeros / minimo 7 caracteres
         public string NombreCompleto { get; set; } = string.Empty; // Solo letras
         public string Telefono { get; set; } = string.Empty; // Minimo 10 carateres / Solo numeros
-        public string Correo { get; set; } = string.Empty; // necesario verificar @
+        public string Correo { get; set; } = string.Empty; // Necesario verificar la existencia de @ / Minimo 13 Caracteres
         public string NroLicencia { get; set; } = string.Empty; // Solo numeros
         public DateTime VencimientoLicencia { get; set; }
         public string EstadoIdentidad { get; set; } = "Validado"; // "Validado" o "No Validado"

@@ -8,12 +8,11 @@ namespace DriveNow.Models
 
         // NOTA: Este ccodigo de alquiler debe ser generado de manera automatica por algun algoritmo, partiendo de la base 'AAA-0000'
         public string CodigoAlquiler { get; set; } = string.Empty; // ejemplo: "ALQ-0912"   
-        public string Cliente { get; set; } = string.Empty;
-        public string DniCliente { get; set; } = string.Empty;
-        public string Vehiculo { get; set; } = string.Empty;
+        public string Cliente { get; set; } = string.Empty; // recibe objeto Cliente.IdCliente
+        public string DniCliente { get; set; } = string.Empty; // recibe Cliente.DniCliente
+        public string Vehiculo { get; set; } = string.Empty; // recibe objeto Vehiculo.IdVehiculo
 
-        // NOTA: Solo se admiten patentes con la estructura argentina 'AA 000 AA'
-        public string Patente { get; set; } = string.Empty; 
+        public string Patente { get; set; } = string.Empty; // recibe Vehiculo.Patente
 
         public DateTime FechaEntregaPactada { get; set; }
         public DateTime FechaDevolucionPactada { get; set; }
