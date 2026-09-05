@@ -1,109 +1,86 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
+using Microsoft.EntityFrameworkCore;
+using DriveNow.Data;
 using DriveNow.Models;
+using DriveNow.Security;
 
 namespace DriveNow.Views
 {
     public partial class LoginView : Window
     {
-        // Usuarios iniciales en memoria para pruebas
-        private static List<Usuario> usuariosRegistrados = new List<Usuario>
-        {
-            new Usuario { IdUsuario = 1, NombreCompleto = "Admin", Email = "admin@gmail.com", Password = "123ABC", Rol = "Administrador" },
-            new Usuario { IdUsuario = 2, NombreCompleto = "Franco Montecino", Email = "frannm1703@gmail.com", Password = "toby91218", Rol = "Operador" }
-        };
+        // Sesión activa disponible globalmente para toda la app
+        public static Empleado? EmpleadoActual { get; private set; }
 
-        // Variable global/estática para conocer el usuario autenticado en toda la app
-        public static Usuario UsuarioActual { get; private set; }
+        private readonly Storyboard _spinnerStoryboard;
 
         public LoginView()
         {
             InitializeComponent();
-            txtLoginEmail.Text = "frannm1703@gmail.com";
-            txtLoginPass.Password = "toby91218";
+            _spinnerStoryboard = (Storyboard)FindResource("SpinnerStoryboard");
         }
 
-        private void btnIniciarSesion_Click(object sender, RoutedEventArgs e)
+        private bool _iniciandoSesion = false;
+
+        private async void btnIniciarSesion_Click(object sender, RoutedEventArgs e)
         {
+            if (_iniciandoSesion) return; // evita doble submit
+            _iniciandoSesion = true;
+
             string email = txtLoginEmail.Text.Trim();
             string pass = txtLoginPass.Password.Trim();
 
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(pass))
             {
                 MessageBox.Show("Complete su correo y contraseña.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _iniciandoSesion = false;
                 return;
             }
 
-            var usuario = usuariosRegistrados.FirstOrDefault(u =>
-                u.Email.Equals(email, StringComparison.OrdinalIgnoreCase) && u.Password == pass);
+            lblTextoBotonLogin.Visibility = Visibility.Collapsed;
+            pnlCargando.Visibility = Visibility.Visible;
+            _spinnerStoryboard.Begin();
 
-            if (usuario != null)
+            try
             {
-                UsuarioActual = usuario;
+                using var context = new DriveNowDbContext();
 
-                // 1. Si el usuario logra loguearse, instanciamos la ventana princial del dashboard
+                // 1. Buscamos al empleado por correo incluyendo su Rol asociado
+                var empleado = await context.Empleados
+                    .Include(emp => emp.Rol)
+                    .FirstOrDefaultAsync(emp => emp.Email == email);
+
+                // 2. Si no existe o la contraseña no coincide con el hash
+                if (empleado == null || !PasswordHelper.VerificarPassword(pass, empleado.PasswordHash))
+                {
+                    MessageBox.Show("Correo o contraseña incorrectos.", "Error de Autenticación", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // 3. Autenticación exitosa: guardamos sesión y abrimos ventana principal
+                EmpleadoActual = empleado;
+
+                await Task.Delay(400);
+
                 MainWindow main = new MainWindow();
                 main.Show();
-
-                // 2. Y cerramos la ventana de login
                 this.Close();
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Correo o contraseña incorrectos.", "Error de Autenticación", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error al conectar con el servidor: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private void btnRegistrarUsuario_Click(object sender, RoutedEventArgs e)
-        {
-
-            string nombre = txtRegNombre.Text.Trim();
-            string email = txtRegEmail.Text.Trim();
-            string pass = txtRegPass.Password.Trim();
-
-            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(pass))
+            finally
             {
-                MessageBox.Show("Complete todos los campos para registrarse.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                lblTextoBotonLogin.Visibility = Visibility.Visible;
+                pnlCargando.Visibility = Visibility.Collapsed;
+                _spinnerStoryboard.Stop();
+                _iniciandoSesion = false;
             }
-
-            if (usuariosRegistrados.Any(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)))
-            {
-                MessageBox.Show("El correo ingresado ya se encuentra registrado.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            usuariosRegistrados.Add(new Usuario
-            {
-                IdUsuario = usuariosRegistrados.Count + 1,
-                NombreCompleto = nombre,
-                Email = email,
-                Password = pass,
-                Rol = "Operador"
-            });
-
-            MessageBox.Show("Usuario registrado con éxito. Ya puedes iniciar sesión.", "Registro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Volvemos a la vista de login
-            pnlRegistro.Visibility = Visibility.Collapsed;
-            pnlLogin.Visibility = Visibility.Visible;
-            txtLoginEmail.Text = email;
-            txtLoginPass.Password = string.Empty;
-        }
-
-        private void lnkIrARegistro_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            pnlLogin.Visibility = Visibility.Collapsed;
-            pnlRegistro.Visibility = Visibility.Visible;
-        }
-
-        private void lnkIrALogin_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            pnlRegistro.Visibility = Visibility.Collapsed;
-            pnlLogin.Visibility = Visibility.Visible;
         }
     }
 }

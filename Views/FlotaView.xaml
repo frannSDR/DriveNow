@@ -10,7 +10,7 @@
             <RowDefinition Height="*"/>
             <!-- Buscador y DataGrid -->
             <RowDefinition Height="Auto"/>
-            <!-- Formulario de Alta -->
+            <!-- Formulario de Alta / Edición -->
         </Grid.RowDefinitions>
 
         <!-- ENCABEZADO Y TARJETAS DE ESTADO -->
@@ -18,7 +18,7 @@
             <DockPanel LastChildFill="False" Margin="0,0,0,15">
                 <StackPanel DockPanel.Dock="Left">
                     <TextBlock Text="Gestión de flota e inventario" FontSize="22" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="Administra el inventario de vehículos, estados y nuevas altas." FontSize="13" Foreground="#94A3B8"/>
+                    <TextBlock Text="Administra el inventario de vehículos, estados y asignaciones." FontSize="13" Foreground="#94A3B8"/>
                 </StackPanel>
             </DockPanel>
 
@@ -61,11 +61,11 @@
                 <!-- Barra de Búsqueda -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <TextBox x:Name="txtBuscar" Width="300" Height="35" HorizontalAlignment="Left"
-             Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="10,7"
-             TextChanged="txtBuscar_TextChanged"/>
+                             Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="10,7"
+                             TextChanged="txtBuscar_TextChanged"/>
 
                     <TextBlock Text="🔍 Buscar patente, modelo..." Foreground="#64748B" IsHitTestVisible="False"
-               Margin="12,8,0,0" HorizontalAlignment="Left">
+                               Margin="12,8,0,0" HorizontalAlignment="Left">
                         <TextBlock.Visibility>
                             <Binding Path="Text.IsEmpty" ElementName="txtBuscar">
                                 <Binding.Converter>
@@ -78,40 +78,95 @@
 
                 <!-- DataGrid de Vehículos -->
                 <DataGrid x:Name="dgvFlota" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
-                          Background="Transparent" BorderThickness="0" RowHeight="45"
+                          Background="Transparent" BorderThickness="0" RowHeight="42" IsReadOnly="True"
                           HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single"
-                          Foreground="White" RowBackground="#1E293B" AlternatingRowBackground="#182234">
+                          SelectionUnit="FullRow" Foreground="White">
+
                     <DataGrid.Resources>
-                        <!-- Estilo de Encabezados -->
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#1E3A8A"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#1E3A8A"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#FFFFFF"/>
+
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="#0F172A"/>
                             <Setter Property="Foreground" Value="#94A3B8"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="Height" Value="38"/>
+                            <Setter Property="Height" Value="36"/>
                             <Setter Property="Padding" Value="10,0"/>
                             <Setter Property="BorderThickness" Value="0"/>
                         </Style>
-                        <!-- Estilo de Celdas -->
+
                         <Style TargetType="DataGridCell">
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Padding" Value="10,0"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#1E3A8A"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="#1E293B"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#2A3A52"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#1E3A8A"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="PATENTE" Binding="{Binding Patente}" Width="120" FontWeight="Bold"/>
-                        <DataGridTextColumn Header="MARCA/MODELO" Binding="{Binding MarcaModelo}" Width="180"/>
-                        <DataGridTextColumn Header="CATEGORÍA" Binding="{Binding Categoria}" Width="130"/>
-                        <DataGridTextColumn Header="AÑO" Binding="{Binding Anio}" Width="80"/>
-                        <DataGridTextColumn Header="ESTADO" Binding="{Binding Estado}" Width="130"/>
+                        <DataGridTextColumn Header="PATENTE" Binding="{Binding Patente}" Width="120" FontWeight="Bold">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Margin" Value="16,0,0,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                            <DataGridTextColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#0F172A"/>
+                                    <Setter Property="Foreground" Value="#94A3B8"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Height" Value="36"/>
+                                    <Setter Property="Padding" Value="16,0,10,0"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGridTextColumn.HeaderStyle>
+                        </DataGridTextColumn>
 
-                        <!-- Columna de Acciones (Eliminar) -->
-                        <DataGridTemplateColumn Header="ACCIONES" Width="100">
+                        <DataGridTextColumn Header="MARCA/MODELO" Binding="{Binding MarcaModelo}" Width="1.8*"/>
+                        <DataGridTextColumn Header="CATEGORÍA" Binding="{Binding Categoria.Nombre}" Width="1.5*"/>
+                        <DataGridTextColumn Header="AÑO" Binding="{Binding Anio}" Width="80"/>
+                        <DataGridTextColumn Header="ESTADO" Binding="{Binding Estado.Nombre}" Width="130"/>
+
+                        <!-- Columna de Acciones (Editar y Eliminar) -->
+                        <DataGridTemplateColumn x:Name="colAccionesFlota" Header="ACCIONES" Width="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="🗑️" Background="Transparent" Foreground="#F87171" 
-                                            BorderThickness="0" Cursor="Hand" Click="btnEliminarFila_Click"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <!-- Botón Editar -->
+                                        <Button Content="✏️" Background="Transparent" Foreground="#38BDF8" 
+                                                BorderThickness="0" Cursor="Hand" Margin="0,0,8,0"
+                                                ToolTip="Editar datos del vehículo"
+                                                Click="btnEditarVehiculo_Click"/>
+
+                                        <!-- Botón Eliminar -->
+                                        <Button Content="🗑️" Background="Transparent" Foreground="#F87171" 
+                                                BorderThickness="0" Cursor="Hand" 
+                                                ToolTip="Eliminar vehículo"
+                                                Click="btnEliminarFila_Click"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -120,16 +175,17 @@
             </Grid>
         </Border>
 
-        <!-- FORMULARIO DE ALTA DE VEHÍCULO -->
-        <Border Grid.Row="2" Background="#1E293B" CornerRadius="8" Padding="15">
+        <!-- FORMULARIO DE ALTA / EDICIÓN DE VEHÍCULO -->
+        <Border x:Name="pnlFormularioVehiculo" Grid.Row="2" Background="#1E293B" CornerRadius="8" Padding="15">
             <StackPanel>
-                <TextBlock Text="➕ Alta de vehículo" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                <TextBlock x:Name="lblTituloFormularioFlota" Text="➕ Alta de vehículo" 
+                           FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
 
                 <!-- Fila 1: Patente, Marca, Modelo -->
                 <UniformGrid Columns="3" Margin="0,0,0,10">
                     <StackPanel Margin="0,0,8,0">
                         <TextBlock Text="Patente" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <TextBox x:Name="txtPatente" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                        <TextBox x:Name="txtPatente" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" TextChanged="txtBuscar_TextChanged"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,8,0">
                         <TextBlock Text="Marca" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
@@ -141,29 +197,40 @@
                     </StackPanel>
                 </UniformGrid>
 
-                <!-- Fila 2: Categoría y Año -->
+                <!-- Fila 2: Categoría, Año, Estado -->
                 <UniformGrid Columns="3" Margin="0,0,0,12">
                     <StackPanel Margin="0,0,8,0">
                         <TextBlock Text="Categoría" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <ComboBox x:Name="cmbCategoria" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6">
-                            <ComboBoxItem Content="Compacto" IsSelected="True"/>
-                            <ComboBoxItem Content="Sedán"/>
-                            <ComboBoxItem Content="Pickup"/>
-                            <ComboBoxItem Content="SUV"/>
-                        </ComboBox>
+                        <ComboBox x:Name="cmbCategoria" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6" 
+                                  DisplayMemberPath="Nombre" SelectedValuePath="IdCategoria"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,8,0">
                         <TextBlock Text="Año" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
                         <TextBox x:Name="txtAnio" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
                     </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Estado" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="cmbEstado" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6"
+                                  DisplayMemberPath="Nombre" SelectedValuePath="IdEstado"/>
+                    </StackPanel>
                 </UniformGrid>
 
                 <!-- Botones Guardar / Cancelar -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Cancelar" Width="100" Height="35" Background="#334155" Foreground="White" 
-                            BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" Click="btnCancelar_Click"/>
-                    <Button Content="Guardar" Width="100" Height="35" Background="#2563EB" Foreground="White" 
-                            FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnGuardar_Click"/>
+                    <Button x:Name="btnCancelarFlota" Content="Cancelar" Width="100" Height="35" 
+                            Background="#475569" Foreground="White" BorderThickness="0" 
+                            Margin="0,0,10,0" Cursor="Hand" Visibility="Collapsed" 
+                            Click="btnCancelarFlota_Click"/>
+
+                    <Button x:Name="btnLimpiarFlota" Content="Limpiar" Width="100" Height="35" 
+                            Background="#334155" Foreground="White" BorderThickness="0" 
+                            Margin="0,0,10,0" Cursor="Hand" 
+                            Click="btnLimpiarFlota_Click"/>
+
+                    <Button x:Name="btnGuardarVehiculo" Content="Guardar" Width="140" Height="35" 
+                            Background="#2563EB" Foreground="White" FontWeight="Bold" 
+                            BorderThickness="0" Cursor="Hand" 
+                            Click="btnGuardarVehiculo_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>

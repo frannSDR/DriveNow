@@ -6,11 +6,8 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Título -->
             <RowDefinition Height="Auto"/>
-            <!-- Bloque Superior: Formulario + Validación -->
             <RowDefinition Height="*"/>
-            <!-- Bloque Inferior: DataGrid de Clientes -->
         </Grid.RowDefinitions>
 
         <!-- ENCABEZADO -->
@@ -19,21 +16,30 @@
             <TextBlock Text="Administra el padrón de conductores y verifica identidades." FontSize="13" Foreground="#94A3B8"/>
         </StackPanel>
 
-        <!-- PANELES SUPERIORES (Registro a la izquierda, Validación a la derecha) -->
+        <!-- PANELES SUPERIORES -->
         <Grid Grid.Row="1" Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.2*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- FORMULARIO DE REGISTRO DE CLIENTE -->
-            <Border Grid.Column="0" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,8,0">
+            <!-- FORMULARIO DE REGISTRO / EDICIÓN -->
+            <Border x:Name="pnlFormularioCliente" Grid.Column="0" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,8,0">
                 <StackPanel>
-                    <TextBlock Text="👤 Registro de cliente" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                    <TextBlock x:Name="lblTituloFormularioCliente" Text="👤 Registro de cliente" 
+                               FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
 
-                    <!-- Nombre Completo -->
-                    <TextBlock Text="Nombre Completo" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                    <TextBox x:Name="txtNombre" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" Margin="0,0,0,10"/>
+                    <!-- Nombre y Apellido -->
+                    <UniformGrid Columns="2" Margin="0,0,0,10">
+                        <StackPanel Margin="0,0,5,0">
+                            <TextBlock Text="Nombre" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtNombre" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                        </StackPanel>
+                        <StackPanel Margin="5,0,0,0">
+                            <TextBlock Text="Apellido" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtApellido" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                        </StackPanel>
+                    </UniformGrid>
 
                     <!-- DNI y Teléfono -->
                     <UniformGrid Columns="2" Margin="0,0,0,10">
@@ -63,12 +69,22 @@
                         </StackPanel>
                     </UniformGrid>
 
-                    <!-- Botones -->
+                    <!-- Botones de Acción -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Limpiar" Width="90" Height="35" Background="#334155" Foreground="White" 
-                                BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" Click="btnLimpiar_Click"/>
-                        <Button Content="Guardar Registro" Width="130" Height="35" Background="#2563EB" Foreground="White" 
-                                FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnGuardarCliente_Click"/>
+                        <Button x:Name="btnCancelarEdicion" Content="Cancelar" Width="90" Height="35" 
+                                Background="#475569" Foreground="White" BorderThickness="0" 
+                                Margin="0,0,10,0" Cursor="Hand" Visibility="Collapsed" 
+                                Click="btnCancelarEdicion_Click"/>
+
+                        <Button x:Name="btnLimpiarCliente" Content="Limpiar" Width="90" Height="35" 
+                                Background="#334155" Foreground="White" BorderThickness="0" 
+                                Margin="0,0,10,0" Cursor="Hand" 
+                                Click="btnLimpiar_Click"/>
+
+                        <Button x:Name="btnGuardarCliente" Content="Guardar Registro" Width="140" Height="35" 
+                                Background="#2563EB" Foreground="White" FontWeight="Bold" 
+                                BorderThickness="0" Cursor="Hand" 
+                                Click="btnGuardarCliente_Click"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -78,7 +94,7 @@
                 <StackPanel>
                     <TextBlock Text="🛡️ Validación de identidad" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
 
-                    <!-- Buscador de DNI para validar -->
+                    <!-- Buscador de DNI -->
                     <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -90,7 +106,7 @@
                                 BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnBuscarValidacion_Click"/>
                     </Grid>
 
-                    <!-- Tarjeta de Identidad del Conductor -->
+                    <!-- Tarjeta de Identidad -->
                     <Border Background="#0F172A" CornerRadius="6" Padding="15" BorderBrush="#334155" BorderThickness="1">
                         <StackPanel>
                             <DockPanel LastChildFill="False" Margin="0,0,0,10">
@@ -101,8 +117,6 @@
                             </DockPanel>
 
                             <TextBlock x:Name="lblDniValidado" Text="DNI: -" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,10"/>
-
-                            <!-- Estado de Licencia -->
                             <TextBlock x:Name="lblVencimientoTexto" Text="Estado de Licencia Vence: -" FontSize="13" Foreground="White" Margin="0,0,0,4"/>
                             <ProgressBar x:Name="pbLicencia" Height="6" Value="100" Foreground="#10B981" Background="#334155" BorderThickness="0" Margin="0,0,0,6"/>
                             <TextBlock x:Name="lblLicenciaEstadoMsg" Text="Licencia válida y en regla" FontSize="11" Foreground="#34D399"/>
@@ -123,40 +137,98 @@
                 <TextBlock Grid.Row="0" Text="Listado de clientes" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
 
                 <DataGrid x:Name="dgvClientes" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
-                          Background="Transparent" BorderThickness="0" RowHeight="45"
+                          Background="Transparent" BorderThickness="0" RowHeight="42" IsReadOnly="True"
                           HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single"
-                          Foreground="White" RowBackground="#1E293B" AlternatingRowBackground="#182234"
+                          SelectionUnit="FullRow" Foreground="White"
                           SelectionChanged="dgvClientes_SelectionChanged">
+
                     <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#1E3A8A"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#1E3A8A"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#FFFFFF"/>
+
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="#0F172A"/>
                             <Setter Property="Foreground" Value="#94A3B8"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="Height" Value="38"/>
+                            <Setter Property="Height" Value="36"/>
                             <Setter Property="Padding" Value="10,0"/>
                             <Setter Property="BorderThickness" Value="0"/>
                         </Style>
+
                         <Style TargetType="DataGridCell">
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Padding" Value="10,0"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#1E3A8A"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="#1E293B"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#2A3A52"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#1E3A8A"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="NOMBRE" Binding="{Binding NombreCompleto}" Width="1.5*" FontWeight="SemiBold"/>
-                        <DataGridTextColumn Header="DNI" Binding="{Binding Dni}" Width="120"/>
-                        <DataGridTextColumn Header="TELÉFONO" Binding="{Binding Telefono}" Width="140"/>
-                        <DataGridTextColumn Header="N° LICENCIA" Binding="{Binding NroLicencia}" Width="120"/>
-                        <DataGridTextColumn Header="VENCIMIENTO" Binding="{Binding VencimientoFormato}" Width="120"/>
-                        <DataGridTextColumn Header="ESTADO" Binding="{Binding Estado}" Width="100"/>
+                        <DataGridTextColumn Header="NOMBRE" Binding="{Binding NombreCompleto}" Width="1.5*" FontWeight="SemiBold">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Margin" Value="16,0,0,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                            <DataGridTextColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#0F172A"/>
+                                    <Setter Property="Foreground" Value="#94A3B8"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Height" Value="36"/>
+                                    <Setter Property="Padding" Value="16,0,10,0"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGridTextColumn.HeaderStyle>
+                        </DataGridTextColumn>
 
-                        <!-- Acciones -->
-                        <DataGridTemplateColumn Header="ACCIÓN" Width="80">
+                        <DataGridTextColumn Header="DNI" Binding="{Binding Dni}" Width="110"/>
+                        <DataGridTextColumn Header="TELÉFONO" Binding="{Binding Telefono}" Width="130"/>
+                        <DataGridTextColumn Header="CORREO" Binding="{Binding Correo}" Width="1.5*"/>
+                        <DataGridTextColumn Header="N° LICENCIA" Binding="{Binding NroLicencia}" Width="110"/>
+                        <DataGridTextColumn Header="VENCIMIENTO" Binding="{Binding VencimientoLicencia, StringFormat=\{0:dd/MM/yyyy\}}" Width="110"/>
+                        <DataGridTextColumn Header="ESTADO" Binding="{Binding EstadoLicencia}" Width="100"/>
+
+                        <!-- Columna de Acciones (Editar y Eliminar) -->
+                        <DataGridTemplateColumn x:Name="colAccionesCliente" Header="ACCIONES" Width="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="🗑️" Background="Transparent" Foreground="#F87171" 
-                                            BorderThickness="0" Cursor="Hand" Click="btnEliminarCliente_Click"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <!-- Botón Editar -->
+                                        <Button Content="✏️" Background="Transparent" Foreground="#38BDF8" 
+                                                BorderThickness="0" Cursor="Hand" Margin="0,0,8,0"
+                                                ToolTip="Editar cliente"
+                                                Click="btnEditarCliente_Click"/>
+
+                                        <!-- Botón Eliminar -->
+                                        <Button Content="🗑️" Background="Transparent" Foreground="#F87171" 
+                                                BorderThickness="0" Cursor="Hand" 
+                                                ToolTip="Eliminar cliente"
+                                                Click="btnEliminarCliente_Click"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

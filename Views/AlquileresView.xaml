@@ -8,45 +8,45 @@
             <RowDefinition Height="Auto"/>
             <!-- Encabezado y KPIs -->
             <RowDefinition Height="Auto"/>
-            <!-- Módulos de Entrega y Devolución -->
+            <!-- Operaciones (Entrega / Devolución) -->
             <RowDefinition Height="*"/>
             <!-- Historial de Alquileres -->
         </Grid.RowDefinitions>
 
         <!-- ENCABEZADO Y TARJETAS KPI -->
         <StackPanel Grid.Row="0" Margin="0,0,0,15">
-            <TextBlock Text="Gestión de Alquileres" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+            <TextBlock Text="Gestión de Contratos y Alquileres" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
 
             <UniformGrid Columns="4">
                 <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
                     <StackPanel>
                         <TextBlock Text="🔑 ALQUILERES ACTIVOS" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                        <TextBlock x:Name="lblKpiActivos" Text="1" FontSize="24" FontWeight="Bold" Foreground="#38BDF8" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="lblKpiActivos" Text="0" FontSize="24" FontWeight="Bold" Foreground="#38BDF8" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
                 <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
                     <StackPanel>
-                        <TextBlock Text="⚠️ CON MORA" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                        <TextBlock x:Name="lblKpiMora" Text="1" FontSize="24" FontWeight="Bold" Foreground="#F87171" Margin="0,4,0,0"/>
+                        <TextBlock Text="⚠️ CON MORA / RETRASO" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                        <TextBlock x:Name="lblKpiMora" Text="0" FontSize="24" FontWeight="Bold" Foreground="#F87171" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
                 <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
                     <StackPanel>
                         <TextBlock Text="✅ DEVUELTOS HOY" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                        <TextBlock x:Name="lblKpiDevueltos" Text="1" FontSize="24" FontWeight="Bold" Foreground="#4ADE80" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="lblKpiDevueltos" Text="0" FontSize="24" FontWeight="Bold" Foreground="#4ADE80" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
                 <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
                     <StackPanel>
-                        <TextBlock Text="🕒 ENTREGAS PENDIENTES" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                        <TextBlock x:Name="lblKpiPendientes" Text="1" FontSize="24" FontWeight="Bold" Foreground="#FBBF24" Margin="0,4,0,0"/>
+                        <TextBlock Text="🕒 TOTAL HISTÓRICO" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                        <TextBlock x:Name="lblKpiTotal" Text="0" FontSize="24" FontWeight="Bold" Foreground="#FBBF24" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
             </UniformGrid>
         </StackPanel>
 
         <!-- PANELES DE OPERACIÓN: REGISTRAR ENTREGA Y DEVOLUCIÓN -->
-        <Grid Grid.Row="1" Margin="0,0,0,15">
+        <Grid x:Name="pnlOperacionesAlquiler" Grid.Row="1" Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -55,50 +55,50 @@
             <!-- 1. REGISTRAR ENTREGA DE VEHÍCULO -->
             <Border Grid.Column="0" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,8,0">
                 <StackPanel>
-                    <TextBlock Text="🚗 Registrar entrega de vehículo" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                    <TextBlock Text="🚗 Registrar entrega de vehículo (Check-out)" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
 
                     <TextBlock Text="Buscar Reserva (Código o DNI)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                    <Grid Margin="0,0,0,10">
+                    <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox x:Name="txtBuscarReservaEntrega" Grid.Column="0" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
-                        <Button Grid.Column="1" Content="Cargar" Width="70" Height="35" Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnCargarReservaEntrega_Click"/>
+                        <Button Grid.Column="1" Content="Cargar" Width="75" Height="35" Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnCargarReservaEntrega_Click"/>
                     </Grid>
-                    <TextBlock x:Name="lblDetalleReservaEntrega" Text="Reserva: No seleccionada" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10"/>
+                    <TextBlock x:Name="lblDetalleReservaEntrega" Text="Reserva: No seleccionada" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10" TextTrimming="CharacterEllipsis"/>
 
-                    <TextBlock Text="INSPECCIÓN PREVIA" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Margin="0,0,0,6"/>
-                    <UniformGrid Columns="2" Margin="0,0,0,10">
+                    <TextBlock Text="INSPECCIÓN INICIAL" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Margin="0,0,0,6"/>
+                    <UniformGrid Columns="2" Margin="0,0,0,15">
                         <StackPanel Margin="0,0,5,0">
                             <TextBlock Text="Combustible (%)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
                             <TextBox x:Name="txtCombustibleSalida" Text="100" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
                         </StackPanel>
                         <StackPanel Margin="5,0,0,0">
-                            <TextBlock Text="Kilometraje" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtKmSalida" Text="45000" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBlock Text="Kilometraje Actual" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtKmSalida" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
                         </StackPanel>
                     </UniformGrid>
 
-                    <Button Content="Registrar Entrega" Height="35" Background="#2563EB" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnRegistrarEntrega_Click"/>
+                    <Button Content="Registrar Entrega de Llaves" Height="35" Background="#2563EB" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnRegistrarEntrega_Click"/>
                 </StackPanel>
             </Border>
 
             <!-- 2. REGISTRAR DEVOLUCIÓN Y DAÑOS -->
             <Border Grid.Column="1" Background="#1E293B" CornerRadius="8" Padding="15" Margin="8,0,0,0">
                 <StackPanel>
-                    <TextBlock Text="🔄 Registrar devolución" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                    <TextBlock Text="🔄 Registrar recepción y cierre (Check-in)" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
 
-                    <TextBlock Text="Buscar Alquiler Activo (Código o Patente)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                    <Grid Margin="0,0,0,10">
+                    <TextBlock Text="Buscar Alquiler (Código o Patente)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox x:Name="txtBuscarAlquilerDev" Grid.Column="0" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
-                        <Button Grid.Column="1" Content="Cargar" Width="70" Height="35" Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnCargarAlquilerDev_Click"/>
+                        <Button Grid.Column="1" Content="Cargar" Width="75" Height="35" Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnCargarAlquilerDev_Click"/>
                     </Grid>
-                    <TextBlock x:Name="lblDetalleAlquilerDev" Text="Alquiler: No seleccionado" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10"/>
+                    <TextBlock x:Name="lblDetalleAlquilerDev" Text="Alquiler: No seleccionado" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10" TextTrimming="CharacterEllipsis"/>
 
                     <UniformGrid Columns="2" Margin="0,0,0,10">
                         <StackPanel Margin="0,0,5,0">
@@ -106,18 +106,17 @@
                             <TextBox x:Name="txtCombustibleEntrada" Text="100" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
                         </StackPanel>
                         <StackPanel Margin="5,0,0,0">
-                            <TextBlock Text="Km Retorno" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtKmEntrada" Text="45350" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBlock Text="Kilometraje Retorno" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtKmEntrada" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
                         </StackPanel>
                     </UniformGrid>
 
-                    <!-- Mapeo de daños / Foto -->
-                    <DockPanel LastChildFill="False" Margin="0,0,0,10">
-                        <Button x:Name="btnAdjuntarDanio" Content="📷 Adjuntar Daño/Foto" Width="160" Height="30" Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand" DockPanel.Dock="Left" Click="btnAdjuntarDanio_Click"/>
+                    <DockPanel LastChildFill="False" Margin="0,0,0,15">
+                        <Button x:Name="btnAdjuntarDanio" Content="📷 Adjuntar Daño/Foto" Width="160" Height="32" Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand" DockPanel.Dock="Left" Click="btnAdjuntarDanio_Click"/>
                         <TextBlock x:Name="lblFotoDanioStatus" Text="Sin daños reportados" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="10,0,0,0" DockPanel.Dock="Left"/>
                     </DockPanel>
 
-                    <Button Content="Finalizar Alquiler" Height="35" Background="#10B981" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnFinalizarAlquiler_Click"/>
+                    <Button Content="Finalizar Alquiler y Liberar Auto" Height="35" Background="#10B981" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnFinalizarAlquiler_Click"/>
                 </StackPanel>
             </Border>
         </Grid>
@@ -130,37 +129,84 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="Historial de alquileres" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                <TextBlock Grid.Row="0" Text="Historial de contratos de alquiler" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
 
                 <DataGrid x:Name="dgvHistorial" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
-                          Background="Transparent" BorderThickness="0" RowHeight="45"
+                          Background="Transparent" BorderThickness="0" RowHeight="42" IsReadOnly="True"
                           HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single"
-                          Foreground="White" RowBackground="#1E293B" AlternatingRowBackground="#182234">
+                          SelectionUnit="FullRow" Foreground="White">
+
                     <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#1E3A8A"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#1E3A8A"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#FFFFFF"/>
+
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="#0F172A"/>
                             <Setter Property="Foreground" Value="#94A3B8"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="Height" Value="38"/>
+                            <Setter Property="Height" Value="36"/>
                             <Setter Property="Padding" Value="10,0"/>
                             <Setter Property="BorderThickness" Value="0"/>
                         </Style>
+
                         <Style TargetType="DataGridCell">
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Padding" Value="10,0"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#1E3A8A"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="#1E293B"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#2A3A52"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#1E3A8A"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="CÓDIGO" Binding="{Binding CodigoAlquiler}" Width="90" FontWeight="Bold"/>
-                        <DataGridTextColumn Header="CLIENTE" Binding="{Binding Cliente}" Width="1.3*"/>
-                        <DataGridTextColumn Header="VEHÍCULO" Binding="{Binding Vehiculo}" Width="1.3*"/>
-                        <DataGridTextColumn Header="ENTREGA" Binding="{Binding EntregaTexto}" Width="120"/>
-                        <DataGridTextColumn Header="DEVOLUCIÓN" Binding="{Binding DevolucionTexto}" Width="120"/>
-                        <DataGridTextColumn Header="KM TOTALES" Binding="{Binding KmTotalesTexto}" Width="100"/>
-                        <DataGridTextColumn Header="MORA" Binding="{Binding MoraTexto}" Width="110"/>
-                        <DataGridTextColumn Header="ESTADO" Binding="{Binding Estado}" Width="90"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding IdAlquiler}" Width="60" FontWeight="Bold">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Margin" Value="16,0,0,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                            <DataGridTextColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#0F172A"/>
+                                    <Setter Property="Foreground" Value="#94A3B8"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Height" Value="36"/>
+                                    <Setter Property="Padding" Value="16,0,10,0"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGridTextColumn.HeaderStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="CLIENTE" Binding="{Binding Reserva.Cliente.NombreCompleto}" Width="1.4*"/>
+                        <DataGridTextColumn Header="VEHÍCULO" Binding="{Binding Reserva.Vehiculo.MarcaModelo}" Width="1.3*"/>
+                        <DataGridTextColumn Header="PATENTE" Binding="{Binding Reserva.Vehiculo.Patente}" Width="110"/>
+                        <DataGridTextColumn Header="SALIDA" Binding="{Binding FechaEntregaReal, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130"/>
+                        <DataGridTextColumn Header="RETORNO" Binding="{Binding FechaEntregaDevolucion, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130"/>
+                        <DataGridTextColumn Header="KM RECORRIDOS" Binding="{Binding KmRecorridosTexto}" Width="110"/>
+                        <DataGridTextColumn Header="MORA" Binding="{Binding MontoMora, StringFormat={}{0:C}}" Width="100"/>
+                        <DataGridTextColumn Header="TOTAL" Binding="{Binding CostoTotalFinal, StringFormat={}{0:C}}" Width="110" FontWeight="Bold"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

@@ -1,40 +1,72 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DriveNow.Models
 {
+    [Table("Alquileres")]
     public class Alquiler
     {
+        [Key]
         public int IdAlquiler { get; set; }
 
-        // NOTA: Este ccodigo de alquiler debe ser generado de manera automatica por algun algoritmo, partiendo de la base 'AAA-0000'
-        public string CodigoAlquiler { get; set; } = string.Empty; // ejemplo: "ALQ-0912"   
-        public string Cliente { get; set; } = string.Empty; // recibe objeto Cliente.IdCliente
-        public string DniCliente { get; set; } = string.Empty; // recibe Cliente.DniCliente
-        public string Vehiculo { get; set; } = string.Empty; // recibe objeto Vehiculo.IdVehiculo
+        public int IdReserva { get; set; }
+        public DateTime FechaEntregaReal { get; set; }
+        public DateTime? FechaEntregaDevolucion { get; set; }
 
-        public string Patente { get; set; } = string.Empty; // recibe Vehiculo.Patente
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal CombustibleSalida { get; set; }
 
-        public DateTime FechaEntregaPactada { get; set; }
-        public DateTime FechaDevolucionPactada { get; set; }
-        public DateTime? FechaEntregaReal { get; set; }
-        public DateTime? FechaDevolucionReal { get; set; }
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal? CombustibleEntrada { get; set; }
 
-        public int CombustibleSalida { get; set; } // porcentaje de ejemplo: 100% / No puede ser una valor negativo ni superior a 100
-        public int CombustibleEntrada { get; set; } // porcentaje de ejemplo: 10% / No puede ser un valor negativo
-        public int KmSalida { get; set; } // No se admiten valores negativos
-        public int KmEntrada { get; set; } // No se admiten valores negativos, ni puede ser menor al valor de salida
+        public int KilometrajeSalida { get; set; }
+        public int? KilometrajeEntrada { get; set; }
 
-        public int HorasMora { get; set; }
-        public decimal MontoMora { get; set; }
-        public string DanioObservaciones { get; set; } = string.Empty;
-        public string RutaEvidenciaDanio { get; set; } = string.Empty;
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal CostoTotal { get; set; }
 
-        public string Estado { get; set; } = "En Curso"; // "En Curso", "Finalizado"
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal MontoMora { get; set; } = 0;
 
-        // Propiedades de formato para la tabla
-        public string EntregaTexto => FechaEntregaReal?.ToString("dd/MM/yy HH:mm") ?? FechaEntregaPactada.ToString("dd/MM/yy HH:mm");
-        public string DevolucionTexto => FechaDevolucionReal?.ToString("dd/MM/yy HH:mm") ?? FechaDevolucionPactada.ToString("dd/MM/yy HH:mm");
-        public string KmTotalesTexto => Estado == "Finalizado" ? $"{Math.Max(0, KmEntrada - KmSalida)} km" : "En curso";
-        public string MoraTexto => HorasMora > 0 ? $"+{HorasMora} hrs (${MontoMora:N0})" : "-";
+        [ForeignKey("IdReserva")]
+        public virtual Reserva? Reserva { get; set; }
+
+        public virtual ICollection<Dano> Danos { get; set; } = new List<Dano>();
+
+        [NotMapped]
+        public decimal TotalLiquidado => CostoTotal + MontoMora;
+
+        [NotMapped]
+        public string CodigoAlquiler => $"ALQ-{IdAlquiler:D4}";
+
+        [NotMapped]
+        public string ClienteTexto => Reserva?.Cliente != null ? $"{Reserva.Cliente.Nombre} {Reserva.Cliente.Apellido}" : "-";
+
+        [NotMapped]
+        public string VehiculoTexto => Reserva?.Vehiculo != null ? $"{Reserva.Vehiculo.Marca} {Reserva.Vehiculo.Modelo} ({Reserva.Vehiculo.Patente})" : "-";
+
+        [NotMapped]
+        public string EntregaTexto => FechaEntregaReal.ToString("dd/MM/yyyy HH:mm");
+
+        [NotMapped]
+        public string DevolucionTexto => FechaEntregaDevolucion.HasValue ? FechaEntregaDevolucion.Value.ToString("dd/MM/yyyy HH:mm") : "En curso";
+
+        [NotMapped]
+        public string KmTotalesTexto => KilometrajeEntrada.HasValue ? $"{KilometrajeEntrada.Value - KilometrajeSalida} km" : "-";
+
+        [NotMapped]
+        public string MoraTexto => MontoMora > 0 ? $"${MontoMora:N2}" : "$0.00";
+
+        [NotMapped]
+        public string EstadoTexto => FechaEntregaDevolucion.HasValue ? "Finalizado" : "En Curso";
+
+        [NotMapped]
+        public string KmRecorridosTexto => KilometrajeEntrada.HasValue ? $"{KilometrajeEntrada.Value - KilometrajeSalida} km"
+            : "En curso";
+
+        [NotMapped]
+        public decimal CostoTotalFinal => CostoTotal + MontoMora;
     }
 }

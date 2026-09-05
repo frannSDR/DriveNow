@@ -1,0 +1,178 @@
+﻿<UserControl x:Class="DriveNow.Views.ReportesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#0F172A">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Encabezado y Filtros -->
+            <RowDefinition Height="Auto"/>
+            <!-- KPIs Financieros -->
+            <RowDefinition Height="*"/>
+            <!-- Desglose por Categoría y Facturación Detallada -->
+        </Grid.RowDefinitions>
+
+        <!-- ENCABEZADO Y FILTROS TEMPORALES -->
+        <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <TextBlock Text="Reportes y Métricas Financieras" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Consolidado de facturación, penalizaciones y rendimiento de la flota." FontSize="12" Foreground="#94A3B8"/>
+                </StackPanel>
+
+                <!-- Selector de Período -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Desde:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <DatePicker x:Name="dpDesde" Width="130" Height="32" SelectedDateChanged="FiltroFechas_Changed"/>
+
+                    <TextBlock Text="Hasta:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="12,0,6,0"/>
+                    <DatePicker x:Name="dpHasta" Width="130" Height="32" SelectedDateChanged="FiltroFechas_Changed"/>
+
+                    <Button Content="Filtrar" Width="80" Height="32" Background="#2563EB" Foreground="White" 
+                            FontWeight="SemiBold" BorderThickness="0" Margin="10,0,0,0" Cursor="Hand" Click="btnFiltrar_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- TARJETAS DE KPIS FINANCIEROS -->
+        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,15">
+            <!-- Ingresos Totales -->
+            <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="💵 FACTURACIÓN TOTAL" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                    <TextBlock x:Name="lblIngresosTotales" Text="$0.00" FontSize="22" FontWeight="Bold" Foreground="#4ADE80" Margin="0,6,0,0"/>
+                    <TextBlock Text="Base + Moras cobradas" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Ingresos por Alquiler Base -->
+            <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="🚗 INGRESOS POR TARIFA" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                    <TextBlock x:Name="lblIngresosBase" Text="$0.00" FontSize="22" FontWeight="Bold" Foreground="#38BDF8" Margin="0,6,0,0"/>
+                    <TextBlock Text="Contratos en regla" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Penalizaciones y Moras -->
+            <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="⚠️ RECARGOS POR MORA" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                    <TextBlock x:Name="lblIngresosMora" Text="$0.00" FontSize="22" FontWeight="Bold" Foreground="#F87171" Margin="0,6,0,0"/>
+                    <TextBlock Text="Penalizaciones aplicadas" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Ticket Promedio -->
+            <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
+                <StackPanel>
+                    <TextBlock Text="📈 TICKET PROMEDIO" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                    <TextBlock x:Name="lblTicketPromedio" Text="$0.00" FontSize="22" FontWeight="Bold" Foreground="#FBBF24" Margin="0,6,0,0"/>
+                    <TextBlock x:Name="lblTotalContratos" Text="0 contratos cerrados" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <!-- SECCIÓN DE RENDIMIENTO: TABLAS COMPARATIVAS -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 1. Rendimiento por Categoría -->
+            <Border Grid.Column="0" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,8,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Rendimiento por Categoría" FontSize="14" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+
+                    <DataGrid x:Name="dgvRendimientoCat" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
+                              Background="Transparent" BorderThickness="0" RowHeight="38" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single"
+                              SelectionUnit="FullRow" Foreground="White">
+                        <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#1E3A8A"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF"/>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#0F172A"/>
+                                <Setter Property="Foreground" Value="#94A3B8"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Height" Value="34"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="#1E293B"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Style>
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="CATEGORÍA" Binding="{Binding Categoria}" Width="1.2*" FontWeight="SemiBold"/>
+                            <DataGridTextColumn Header="ALQUILERES" Binding="{Binding CantidadAlquileres}" Width="85"/>
+                            <DataGridTextColumn Header="FACTURACIÓN" Binding="{Binding TotalRecaudado, StringFormat={}{0:C}}" Width="1.3*" FontWeight="Bold"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- 2. Detalle de Contratos Liquidados -->
+            <Border Grid.Column="1" Background="#1E293B" CornerRadius="8" Padding="15" Margin="8,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Contratos Liquidados en el Período" FontSize="14" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+
+                    <DataGrid x:Name="dgvContratosCerrados" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
+                              Background="Transparent" BorderThickness="0" RowHeight="38" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single"
+                              SelectionUnit="FullRow" Foreground="White">
+                        <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#1E3A8A"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF"/>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#0F172A"/>
+                                <Setter Property="Foreground" Value="#94A3B8"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Height" Value="34"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="#1E293B"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Style>
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="CONTRATO" Binding="{Binding CodigoAlquiler}" Width="85" FontWeight="Bold"/>
+                            <DataGridTextColumn Header="CLIENTE" Binding="{Binding Cliente}" Width="1.2*"/>
+                            <DataGridTextColumn Header="VEHÍCULO" Binding="{Binding Vehiculo}" Width="1.2*"/>
+                            <DataGridTextColumn Header="TARIFA" Binding="{Binding CostoBase, StringFormat={}{0:C}}" Width="95"/>
+                            <DataGridTextColumn Header="MORA" Binding="{Binding MontoMora, StringFormat={}{0:C}}" Width="90"/>
+                            <DataGridTextColumn Header="TOTAL" Binding="{Binding TotalCobrado, StringFormat={}{0:C}}" Width="105" FontWeight="Bold"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

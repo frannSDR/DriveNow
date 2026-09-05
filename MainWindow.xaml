@@ -7,100 +7,130 @@
         Background="#0F172A">
 
     <Window.Resources>
-        <!-- Estilo base para todos los botones del menú -->
-        <Style TargetType="Button">
-            <!-- 1. Movemos los valores por defecto aquí -->
+        <!-- Estilo Principal para Botones de Navegación -->
+        <Style x:Key="SidebarNavButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
             <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="Height" Value="45"/>
-            <Setter Property="Margin" Value="12,4"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="10,3"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="Padding" Value="14,0"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-
-            <!-- NUEVO: Plantilla para redondear los bordes -->
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                    BorderBrush="{TemplateBinding BorderBrush}" 
-                    BorderThickness="{TemplateBinding BorderThickness}" 
-                    CornerRadius="8">
-                            <!-- Aquí puedes cambiar el nivel de redondeo -->
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                  VerticalAlignment="Center" 
-                                  Margin="{TemplateBinding Padding}"/>
+                        <Border x:Name="borderContenedor"
+                            Background="{TemplateBinding Background}" 
+                            BorderThickness="0" 
+                            CornerRadius="7">
+                            <Grid>
+                                <!-- Indicador de barra vertical activa -->
+                                <Border x:Name="indicadorActivo"
+                                    Width="3" HorizontalAlignment="Left"
+                                    Background="#38BDF8" CornerRadius="2"
+                                    Visibility="Collapsed" Margin="0,6"/>
+
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                              VerticalAlignment="Center" 
+                                              Margin="{TemplateBinding Padding}"/>
+                            </Grid>
                         </Border>
+
+                        <ControlTemplate.Triggers>
+                            <!-- 1. Estado Hover -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="borderContenedor" Property="Background" Value="#283548"/>
+                                <Setter Property="Foreground" Value="#F8FAFC"/>
+                            </Trigger>
+
+                            <!-- 2. Estado Click / Presionado -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="borderContenedor" Property="Background" Value="#1E293B"/>
+                                <Setter Property="Foreground" Value="#38BDF8"/>
+                            </Trigger>
+
+                            <!-- 3. Estado Activo/Seleccionado (Activado mediante Tag) -->
+                            <Trigger Property="Tag" Value="Activo">
+                                <Setter TargetName="borderContenedor" Property="Background" Value="#1E3A8A"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter TargetName="indicadorActivo" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
 
-            <Style.Triggers>
-                <!-- 2. Al pasar el mouse por encima -->
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E0F2FE"/>
-                    <!-- Fondo celeste claro -->
-                    <Setter Property="Foreground" Value="Black"/>
-                    <!-- Texto Negro -->
-                </Trigger>
-            </Style.Triggers>
+        <!-- Estilo para Cerrar Sesión (Alerta Suave) -->
+        <Style x:Key="SidebarLogoutButtonStyle" TargetType="Button" BasedOn="{StaticResource SidebarNavButtonStyle}">
+            <Setter Property="Foreground" Value="#F87171"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="borderLogout" Background="Transparent" CornerRadius="7">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          VerticalAlignment="Center" 
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="borderLogout" Property="Background" Value="#450A0A"/>
+                                <Setter Property="Foreground" Value="#FCA5A5"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="borderLogout" Property="Background" Value="#2B0505"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
     <Grid>
-        <!-- dividimos en dos columnas: el menu lateral (240px) y area central (el resto del area disponible) -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="240"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- sidebar -->
+        <!-- Sidebar -->
         <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,1,0">
             <DockPanel LastChildFill="False">
 
-                <!-- logo y titulo superior -->
+                <!-- Logo y Título -->
                 <StackPanel DockPanel.Dock="Top" Margin="20,25,20,30">
                     <TextBlock Text="Drive Now" FontSize="24" FontWeight="Bold" Foreground="#38BDF8"/>
                     <TextBlock Text="Panel de Administración" FontSize="12" Foreground="#94A3B8" Margin="0,2,0,0"/>
                 </StackPanel>
 
-                <!-- Botones de Navegación -->
+                <!-- Botones Principales -->
                 <StackPanel DockPanel.Dock="Top">
-                    <Button x:Name="btnNavDashboard" Content="📊  Dashboard" 
-                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
-                            FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="btnNavDashboard_Click"/>
+                    <Button x:Name="btnNavDashboard" Content="📊   Dashboard" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavDashboard_Click"/>
+                    <Button x:Name="btnNavFlota" Content="🚗   Gestión de Flota" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavFlota_Click"/>
+                    <Button x:Name="btnNavClientes" Content="👥   Gestión de Clientes" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavClientes_Click"/>
+                    <Button x:Name="btnNavReservas" Content="📅   Gestión de Reservas" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavReservas_Click"/>
+                    <Button x:Name="btnNavAlquileres" Content="🔑   Gestión de Alquileres" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavAlquileres_Click"/>
 
-                    <Button x:Name="btnNavFlota" Content="🚗  Gestión de Flota" 
-                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
-                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnNavFlota_Click"/>
-
-                    <Button x:Name="btnNavClientes" Content="👥  Gestión de Clientes" 
-                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
-                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnNavClientes_Click"/>
-
-                    <Button x:Name="btnNavReservas" Content="📅  Gestión de Reservas"  
-                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
-                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnNavReservas_Click"/>
-
-                    <Button x:Name="btnNavAlquileres" Content="🔑  Gestión de Alquileres" 
-                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0"
-                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnNavAlquileres_Click"/>
+                    <!-- Módulos con restricción -->
+                    <Button x:Name="btnNavReportes" Content="📈   Reportes y Finanzas" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavReportes_Click"/>
+                    <Button x:Name="btnNavUsuarios" Content="🛡️   Gestión de Personal" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavUsuarios_Click"/>
+                    <Button x:Name="btnNavCategorias" Content="🏷️   Tarifas y Categorías" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavCategorias_Click"/>
                 </StackPanel>
-                <StackPanel DockPanel.Dock="Bottom">
-                    <Button x:Name="btnAdminPerfil" Content="👤  Cuenta"
-                            Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0" 
-                            FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnAdminPerfil_Click"/>
-                    <Button x:Name="btnCerrarSesion" Content="⬅️  Cerrar Sesion"
-                                    Height="45" Margin="12,4" HorizontalContentAlignment="Left" Padding="15,0" 
-                                    FontWeight="Medium" BorderThickness="0" Cursor="Hand" Click="btnCerrarSesion_Click"/>
+
+                <!-- Sección Inferior -->
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,15">
+                    <Button x:Name="btnNavCuenta" Content="⚙️   Mi Cuenta" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavCuenta_Click"/>
+                    <Button x:Name="btnCerrarSesion" Content="🚪   Cerrar Sesión" Style="{StaticResource SidebarLogoutButtonStyle}" Click="btnCerrarSesion_Click"/>
                 </StackPanel>
 
             </DockPanel>
         </Border>
 
-        <!-- CONTENEDOR CENTRAL DINÁMICO -->
+        <!-- Contenedor Dinámico de Vistas -->
         <ContentControl x:Name="ContenedorPrincipal" Grid.Column="1" Margin="20"/>
 
     </Grid>

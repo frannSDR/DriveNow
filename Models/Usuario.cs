@@ -1,15 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DriveNow.Models
 {
-    public class Usuario
+    [Table("Empleados")]
+    public class Empleado
     {
-        public int IdUsuario { get; set; }
-        public string NombreCompleto { get; set; } = string.Empty; // Solo letras
-        public string Email { get; set; } = string.Empty; // verificar @
-        public string Password { get; set; } = string.Empty; // usar algun metodo de hashing
-        public string Rol { get; set; } = "Operador"; // "Administrador", "Operador"
+        [Key]
+        public int IdEmpleado { get; set; }
+
+        public string Dni { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+        public string? FotoPerfilRuta { get; set; }
+
+        public int IdRol { get; set; }
+
+        [ForeignKey("IdRol")]
+        public virtual Rol? Rol { get; set; }
+
+        public virtual ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
+
+        [NotMapped]
+        public string NombreCompleto => $"{Nombre} {Apellido}";
+
+        [NotMapped]
+        public bool EsAdmin => IdRol == 1;
     }
 }

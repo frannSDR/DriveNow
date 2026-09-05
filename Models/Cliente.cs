@@ -1,24 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DriveNow.Models
 {
+    [Table("Clientes")]
     public class Cliente
     {
+        [Key]
         public int IdCliente { get; set; }
-        public string Dni { get; set; } = string.Empty; // Solo numeros / minimo 7 caracteres
-        public string NombreCompleto { get; set; } = string.Empty; // Solo letras
-        public string Telefono { get; set; } = string.Empty; // Minimo 10 carateres / Solo numeros
-        public string Correo { get; set; } = string.Empty; // Necesario verificar la existencia de @ / Minimo 13 Caracteres
-        public string NroLicencia { get; set; } = string.Empty; // Solo numeros
+
+        public string Dni { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string? Telefono { get; set; }
+        public string? Correo { get; set; }
+        public string NroLicencia { get; set; } = string.Empty;
         public DateTime VencimientoLicencia { get; set; }
-        public string EstadoIdentidad { get; set; } = "Validado"; // "Validado" o "No Validado"
-        public string RutaFoto { get; set; } = string.Empty;
 
-        // Propiedad calculada para saber si la licencia está vencida
-        public bool LicenciaVencida => VencimientoLicencia.Date < DateTime.Now.Date;
+        public virtual ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
 
-        // Estado operativo para la tabla ("Activo" si está al día, "Inactivo" si está vencida)
-        public string Estado => LicenciaVencida ? "Inactivo" : "Activo";
-        public string VencimientoFormato => VencimientoLicencia.ToString("MM/yyyy");
+        // Propiedades calculadas en tiempo real para la UI
+        [NotMapped]
+        public string NombreCompleto => $"{Nombre} {Apellido}";
+
+        [NotMapped]
+        public bool LicenciaVigente => VencimientoLicencia.Date >= DateTime.Today;
+
+        [NotMapped]
+        public string EstadoLicencia => LicenciaVigente ? "VALIDADO" : "VENCIDO";
     }
 }
