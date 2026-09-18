@@ -20,7 +20,7 @@
             }
             catch
             {
-                // Si el formato del hash no es válido
+                // retornamos false si el formato del hash no es válido
                 return false;
             }
         }

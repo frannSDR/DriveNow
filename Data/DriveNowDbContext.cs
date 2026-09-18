@@ -20,7 +20,7 @@ namespace DriveNow.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = "Server=192.168.100.15,1433;Database=DriveNow_DB;User Id=sa;Password=Tobyy91218@;TrustServerCertificate=True;";
+                string connectionString = "Server=100.125.117.70,1433;Database=DriveNow_DB;User Id=sa;Password=Tobyy91218@;TrustServerCertificate=True;";
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
