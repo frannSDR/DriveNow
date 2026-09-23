@@ -15,11 +15,9 @@ namespace DriveNow.Views
     public partial class FlotaView : UserControl
     {
         private ObservableCollection<Vehiculo> _listaVehiculos = new ObservableCollection<Vehiculo>();
-        
-        private Vehiculo? _vehiculoEnEdicion = null; // null = Alta, con valor = Edición
-        
+        private Vehiculo? _vehiculoEnEdicion = null;
         private bool _isFormatting = false;
-        
+
         public FlotaView()
         {
             InitializeComponent();
@@ -39,7 +37,6 @@ namespace DriveNow.Views
 
             var rol = (RolUsuario)LoginView.EmpleadoActual.IdRol;
 
-            // El Dueño tiene acceso de solo lectura (supervisión ejecutiva)
             if (rol == RolUsuario.Dueno)
             {
                 pnlFormularioVehiculo.Visibility = Visibility.Collapsed;
@@ -47,7 +44,6 @@ namespace DriveNow.Views
             }
             else
             {
-                // SuperAdmin, Administrador y Operador pueden operar sobre los vehículos
                 pnlFormularioVehiculo.Visibility = Visibility.Visible;
                 colAccionesFlota.Visibility = Visibility.Visible;
             }
@@ -63,7 +59,11 @@ namespace DriveNow.Views
                 cmbCategoria.ItemsSource = categorias;
                 if (categorias.Count > 0) cmbCategoria.SelectedIndex = 0;
 
-                var estados = await context.Estados.ToListAsync();
+                var estadosValidos = new[] { "Disponible", "Alquilado", "En Taller", "Mantenimiento" };
+                var estados = await context.Estados
+                    .Where(e => estadosValidos.Contains(e.Nombre))
+                    .ToListAsync();
+
                 cmbEstado.ItemsSource = estados;
                 if (estados.Count > 0) cmbEstado.SelectedIndex = 0;
             }
@@ -78,9 +78,11 @@ namespace DriveNow.Views
             try
             {
                 using var context = new DriveNowDbContext();
+                // Filtramos únicamente los vehículos con borrado lógico activo
                 var vehiculos = await context.Vehiculos
                     .Include(v => v.Categoria)
                     .Include(v => v.Estado)
+                    .Where(v => v.Activo)
                     .OrderByDescending(v => v.IdVehiculo)
                     .ToListAsync();
 
@@ -122,16 +124,11 @@ namespace DriveNow.Views
             }
 
             string patente = txtPatente.Text.Trim().ToUpper();
-
-            // Regex para formato estricto: 2 Letras + Espacio + 3 Números + Espacio + 2 Letras
             var regexMercosur = new Regex(@"^[A-Z]{2} [0-9]{3} [A-Z]{2}$");
 
             if (!regexMercosur.IsMatch(patente))
             {
-                MessageBox.Show("El formato de patente debe ser válido (ej. AA 123 AA).",
-                                "Patente Inválida",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
+                MessageBox.Show("El formato de patente debe ser válido (ej. AA 123 AA).", "Patente Inválida", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -142,20 +139,19 @@ namespace DriveNow.Views
             {
                 using var context = new DriveNowDbContext();
 
-                // Validación RN-01: Patente única (excluyendo el vehículo actual si se está editando)
                 bool existePatente = await context.Vehiculos.AnyAsync(v =>
                     v.Patente == patente &&
+                    v.Activo &&
                     (_vehiculoEnEdicion == null || v.IdVehiculo != _vehiculoEnEdicion.IdVehiculo));
 
                 if (existePatente)
                 {
-                    MessageBox.Show("Ya existe un vehículo registrado con esa patente.", "Patente Duplicada", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Ya existe un vehículo activo registrado con esa patente.", "Patente Duplicada", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
                 if (_vehiculoEnEdicion == null)
                 {
-                    // --- ALTA NUEVA ---
                     var nuevo = new Vehiculo
                     {
                         Patente = patente,
@@ -163,7 +159,8 @@ namespace DriveNow.Views
                         Modelo = txtModelo.Text.Trim(),
                         Anio = anio,
                         IdCategoria = idCat,
-                        IdEstado = idEst
+                        IdEstado = idEst,
+                        Activo = true
                     };
 
                     context.Vehiculos.Add(nuevo);
@@ -172,10 +169,20 @@ namespace DriveNow.Views
                 }
                 else
                 {
-                    // --- ACTUALIZACIÓN ---
-                    var vehiculoDb = await context.Vehiculos.FindAsync(_vehiculoEnEdicion.IdVehiculo);
+                    var vehiculoDb = await context.Vehiculos
+                        .Include(v => v.Estado)
+                        .FirstOrDefaultAsync(v => v.IdVehiculo == _vehiculoEnEdicion.IdVehiculo);
+
                     if (vehiculoDb != null)
                     {
+                        if (vehiculoDb.Estado?.Nombre == "Alquilado")
+                        {
+                            MessageBox.Show("No se pueden guardar los cambios porque el vehículo se encuentra alquilado.", "Acción Rechazada", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            ResetearFormularioFlota();
+                            await CargarFlotaDesdeBdAsync();
+                            return;
+                        }
+
                         vehiculoDb.Patente = patente;
                         vehiculoDb.Marca = txtMarca.Text.Trim();
                         vehiculoDb.Modelo = txtModelo.Text.Trim();
@@ -201,6 +208,17 @@ namespace DriveNow.Views
         {
             if (sender is Button btn && btn.DataContext is Vehiculo vehiculo)
             {
+                if (vehiculo.Estado?.Nombre == "Alquilado")
+                {
+                    MessageBox.Show(
+                        $"El vehículo {vehiculo.MarcaModelo} ({vehiculo.Patente}) se encuentra actualmente ALQUILADO.\n" +
+                        "No es posible modificar sus datos mientras esté en posesión de un cliente.",
+                        "Operación Bloqueada",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
                 _vehiculoEnEdicion = vehiculo;
 
                 txtPatente.Text = vehiculo.Patente;
@@ -224,29 +242,24 @@ namespace DriveNow.Views
             {
                 if (vehiculoSeleccionado.Estado?.Nombre == "Alquilado" || vehiculoSeleccionado.Estado?.Nombre == "Reservado")
                 {
-                    MessageBox.Show($"No se puede eliminar el vehículo porque se encuentra en estado '{vehiculoSeleccionado.Estado.Nombre}'.", "Acción Bloqueada", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"No se puede dar de baja el vehículo porque se encuentra en estado '{vehiculoSeleccionado.Estado.Nombre}'.", "Acción Bloqueada", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                var res = MessageBox.Show($"¿Seguro que desea eliminar el vehículo {vehiculoSeleccionado.MarcaModelo} ({vehiculoSeleccionado.Patente})?", "Confirmar Eliminación", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var res = MessageBox.Show($"¿Seguro que desea dar de baja el vehículo {vehiculoSeleccionado.MarcaModelo} ({vehiculoSeleccionado.Patente})?", "Confirmar Baja", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (res != MessageBoxResult.Yes) return;
 
                 try
                 {
                     using var context = new DriveNowDbContext();
 
-                    bool tieneHistorial = await context.Reservas.AnyAsync(r => r.IdVehiculo == vehiculoSeleccionado.IdVehiculo);
-                    if (tieneHistorial)
+                    var itemADesactivar = await context.Vehiculos.FindAsync(vehiculoSeleccionado.IdVehiculo);
+                    if (itemADesactivar != null)
                     {
-                        MessageBox.Show("No se puede eliminar el vehículo porque posee historial de reservas asociadas.", "Operación Bloqueada", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    var itemABorrar = await context.Vehiculos.FindAsync(vehiculoSeleccionado.IdVehiculo);
-                    if (itemABorrar != null)
-                    {
-                        context.Vehiculos.Remove(itemABorrar);
+                        // Borrado lógico
+                        itemADesactivar.Activo = false;
                         await context.SaveChangesAsync();
+
                         _listaVehiculos.Remove(vehiculoSeleccionado);
 
                         if (_vehiculoEnEdicion?.IdVehiculo == vehiculoSeleccionado.IdVehiculo)
@@ -255,12 +268,12 @@ namespace DriveNow.Views
                         }
 
                         ActualizarMetricas();
-                        MessageBox.Show("Vehículo eliminado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show("Vehículo dado de baja exitosamente del inventario activo.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error al eliminar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Error al procesar la baja: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -287,36 +300,26 @@ namespace DriveNow.Views
 
             _isFormatting = true;
 
-            // 1. Tomar solo caracteres alfanuméricos y pasarlos a mayúsculas
             string raw = Regex.Replace(txtPatente.Text.ToUpper(), @"[^A-Z0-9]", "");
+            if (raw.Length > 7) raw = raw.Substring(0, 7);
 
-            // Limitar a máximo 7 caracteres útiles
-            if (raw.Length > 7)
-                raw = raw.Substring(0, 7);
-
-            // 2. Construir la máscara dinámica según lo que va escribiendo:
-            // Formato objetivo: AA 123 AA
             string formatted = raw;
-
             if (raw.Length > 5)
             {
-                // Más de 5 caracteres: AA 123 + resto
                 formatted = $"{raw.Substring(0, 2)} {raw.Substring(2, 3)} {raw.Substring(5)}";
             }
             else if (raw.Length > 2)
             {
-                // Entre 3 y 5 caracteres: AA + resto
                 formatted = $"{raw.Substring(0, 2)} {raw.Substring(2)}";
             }
 
             txtPatente.Text = formatted;
-            txtPatente.CaretIndex = txtPatente.Text.Length; // Mantiene el cursor siempre al final
+            txtPatente.CaretIndex = txtPatente.Text.Length;
 
             _isFormatting = false;
         }
 
         private void btnCancelarFlota_Click(object sender, RoutedEventArgs e) => ResetearFormularioFlota();
-
         private void btnLimpiarFlota_Click(object sender, RoutedEventArgs e) => ResetearFormularioFlota();
 
         private void ResetearFormularioFlota()

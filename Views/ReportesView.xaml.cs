@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -63,10 +63,10 @@ namespace DriveNow.Views
 
                 // Obtenemos solo los contratos finalizados en el período
                 var contratos = await context.Alquileres
-                    .Include(a => a.Reserva)
+                    .Include(a => a.Reserva!)
                         .ThenInclude(r => r.Cliente)
-                    .Include(a => a.Reserva)
-                        .ThenInclude(r => r.Vehiculo)
+                    .Include(a => a.Reserva!)
+                        .ThenInclude(r => r.Vehiculo!)
                             .ThenInclude(v => v.Categoria)
                     .Where(a => a.FechaEntregaDevolucion.HasValue &&
                                 a.FechaEntregaDevolucion.Value >= fechaInicio &&

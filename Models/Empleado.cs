@@ -15,9 +15,9 @@ namespace DriveNow.Models
         public string Apellido { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
-        public string? FotoPerfilRuta { get; set; }
-
         public int IdRol { get; set; }
+
+        public bool Activo { get; set; } = true; // Borrado lógico
 
         [ForeignKey("IdRol")]
         public virtual Rol? Rol { get; set; }
@@ -26,8 +26,5 @@ namespace DriveNow.Models
 
         [NotMapped]
         public string NombreCompleto => $"{Nombre} {Apellido}";
-
-        [NotMapped]
-        public bool EsAdmin => IdRol == 1;
     }
 }

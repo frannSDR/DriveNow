@@ -1,0 +1,73 @@
+<Window x:Class="DriveNow.Views.DetalleDanoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Drive Now - Reporte de Inspección de Daños"
+        Height="620" Width="680"
+        WindowStartupLocation="CenterOwner"
+        Background="#0F172A"
+        ResizeMode="NoResize">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ENCABEZADO -->
+        <Border Grid.Row="0" Margin="0,0,0,15">
+            <StackPanel>
+                <TextBlock x:Name="lblTituloContrato" Text="🔍 Inspección de Daño - Contrato ALQ-0000" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                <TextBlock x:Name="lblSubtituloVehiculo" Text="Vehículo: -" FontSize="13" Foreground="#94A3B8" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- DATOS DEL DAÑO -->
+        <Border Grid.Row="1" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+            <StackPanel>
+                <DockPanel LastChildFill="False" Margin="0,0,0,8">
+                    <TextBlock Text="ZONA AFECTADA:" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Border Background="#450A0A" CornerRadius="4" Padding="8,3" Margin="8,0,0,0" DockPanel.Dock="Left">
+                        <TextBlock x:Name="lblZona" Text="Carrocería" Foreground="#F87171" FontWeight="Bold" FontSize="12"/>
+                    </Border>
+                </DockPanel>
+
+                <TextBlock Text="DESCRIPCIÓN DEL DAÑO:" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" Margin="0,4,0,2"/>
+                <TextBlock x:Name="lblDescripcion" Text="Sin descripción" Foreground="White" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            </StackPanel>
+        </Border>
+
+        <!-- EVIDENCIA FOTOGRÁFICA -->
+        <Border Grid.Row="2" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="📷 EVIDENCIA FOTOGRÁFICA ADJUNTA" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                <Border Grid.Row="1" Background="#0F172A" CornerRadius="6" BorderBrush="#334155" BorderThickness="1" ClipToBounds="True">
+                    <Grid>
+                        <!-- Imagen de la evidencia -->
+                        <Image x:Name="imgEvidencia" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        <!-- Mensaje alternativo cuando no hay imagen o no existe -->
+                        <StackPanel x:Name="pnlSinImagen" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
+                            <TextBlock Text="⚠️" FontSize="36" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="lblMensajeSinImagen" Text="No se encontró el archivo de imagen en la ruta especificada." 
+                                       Foreground="#94A3B8" FontSize="12" TextAlignment="Center" Margin="0,8,0,0" TextWrapping="Wrap" MaxWidth="400"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- BOTÓN CERRAR -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cerrar" Width="110" Height="36" Background="#334155" Foreground="White" 
+                    FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="btnCerrar_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

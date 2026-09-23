@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using DriveNow.Models;
@@ -8,7 +8,6 @@ namespace DriveNow
 {
     public partial class MainWindow : Window
     {
-        
         public MainWindow()
         {
             InitializeComponent();
@@ -32,6 +31,7 @@ namespace DriveNow
                     btnNavReservas.Visibility = Visibility.Visible;
                     btnNavAlquileres.Visibility = Visibility.Visible;
                     btnNavFlota.Visibility = Visibility.Visible;
+                    btnNavMisOperaciones.Visibility = Visibility.Visible; // Activo para el Operador
                     btnNavReportes.Visibility = Visibility.Collapsed;
                     btnNavUsuarios.Visibility = Visibility.Collapsed;
                     btnNavCategorias.Visibility = Visibility.Collapsed;
@@ -43,6 +43,7 @@ namespace DriveNow
                     btnNavReservas.Visibility = Visibility.Visible;
                     btnNavAlquileres.Visibility = Visibility.Visible;
                     btnNavFlota.Visibility = Visibility.Visible;
+                    btnNavMisOperaciones.Visibility = Visibility.Visible;
                     btnNavReportes.Visibility = Visibility.Collapsed;
                     btnNavUsuarios.Visibility = Visibility.Collapsed;
                     btnNavCategorias.Visibility = Visibility.Visible;
@@ -55,6 +56,7 @@ namespace DriveNow
                     btnNavClientes.Visibility = Visibility.Collapsed;
                     btnNavReservas.Visibility = Visibility.Collapsed;
                     btnNavAlquileres.Visibility = Visibility.Collapsed;
+                    btnNavMisOperaciones.Visibility = Visibility.Collapsed; // El Dueño no opera alquileres directos
                     btnNavUsuarios.Visibility = Visibility.Collapsed;
                     btnNavCategorias.Visibility = Visibility.Collapsed;
                     break;
@@ -65,6 +67,7 @@ namespace DriveNow
                     btnNavClientes.Visibility = Visibility.Visible;
                     btnNavReservas.Visibility = Visibility.Visible;
                     btnNavAlquileres.Visibility = Visibility.Visible;
+                    btnNavMisOperaciones.Visibility = Visibility.Visible;
                     btnNavReportes.Visibility = Visibility.Visible;
                     btnNavUsuarios.Visibility = Visibility.Visible;
                     btnNavCategorias.Visibility = Visibility.Visible;
@@ -76,13 +79,12 @@ namespace DriveNow
         {
             Button[] botones = {
                 btnNavDashboard, btnNavFlota, btnNavClientes,
-                btnNavReservas, btnNavAlquileres, btnNavReportes,
-                btnNavUsuarios, btnNavCategorias, btnNavCuenta
+                btnNavReservas, btnNavAlquileres, btnNavMisOperaciones,
+                btnNavReportes, btnNavUsuarios, btnNavCategorias, btnNavCuenta
             };
 
             foreach (Button btn in botones)
             {
-                // Al usar la propiedad Tag, el Trigger de XAML aplica la selección limpia
                 btn.Tag = (btn == botonSeleccionado) ? "Activo" : null;
             }
         }
@@ -117,6 +119,12 @@ namespace DriveNow
             ActualizarBotonActivo(btnNavAlquileres);
         }
 
+        private void btnNavMisOperaciones_Click(object sender, RoutedEventArgs e)
+        {
+            ContenedorPrincipal.Content = new MisOperacionesView();
+            ActualizarBotonActivo(btnNavMisOperaciones);
+        }
+
         private void btnNavReportes_Click(object sender, RoutedEventArgs e)
         {
             ContenedorPrincipal.Content = new ReportesView();
@@ -131,8 +139,14 @@ namespace DriveNow
 
         private void btnNavCuenta_Click(object sender, RoutedEventArgs e)
         {
-            ContenedorPrincipal.Content = new MiCuentaView(); 
+            ContenedorPrincipal.Content = new MiCuentaView();
             ActualizarBotonActivo(btnNavCuenta);
+        }
+
+        private void btnNavCategorias_Click(object sender, RoutedEventArgs e)
+        {
+            ContenedorPrincipal.Content = new CategoriasView();
+            ActualizarBotonActivo(btnNavCategorias);
         }
 
         private void btnCerrarSesion_Click(object sender, RoutedEventArgs e)
@@ -140,16 +154,11 @@ namespace DriveNow
             var res = MessageBox.Show("¿Desea cerrar la sesión actual?", "Cerrar Sesión", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (res == MessageBoxResult.Yes)
             {
+                LoginView.CerrarSesion();
                 LoginView login = new LoginView();
                 login.Show();
                 this.Close();
             }
-        }
-
-        private void btnNavCategorias_Click(object sender, RoutedEventArgs e)
-        {
-            ContenedorPrincipal.Content = new CategoriasView();
-            ActualizarBotonActivo(btnNavCategorias);
         }
     }
 }

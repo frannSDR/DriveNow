@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -39,6 +39,9 @@ namespace DriveNow.Models
         public decimal TotalLiquidado => CostoTotal + MontoMora;
 
         [NotMapped]
+        public bool TieneDanos => Danos != null && Danos.Count > 0;
+
+        [NotMapped]
         public string CodigoAlquiler => $"ALQ-{IdAlquiler:D4}";
 
         [NotMapped]
@@ -68,5 +71,15 @@ namespace DriveNow.Models
 
         [NotMapped]
         public decimal CostoTotalFinal => CostoTotal + MontoMora;
+
+        public int? IdEmpleadoEntrega { get; set; }
+
+        [ForeignKey("IdEmpleadoEntrega")]
+        public virtual Empleado? EmpleadoEntrega { get; set; }
+
+        public int? IdEmpleadoDevolucion { get; set; }
+
+        [ForeignKey("IdEmpleadoDevolucion")]
+        public virtual Empleado? EmpleadoDevolucion { get; set; }
     }
 }

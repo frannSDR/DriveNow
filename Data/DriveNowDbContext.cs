@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using DriveNow.Models;
 
 namespace DriveNow.Data
@@ -20,7 +22,19 @@ namespace DriveNow.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = "Server=100.125.117.70,1433;Database=DriveNow_DB;User Id=sa;Password=Tobyy91218@;TrustServerCertificate=True;";
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+                var configuration = builder.Build();
+                string? connectionString = configuration.GetConnectionString("DefaultConnection");
+
+                // Respaldo de seguridad en caso de que no se encuentre el archivo de configuración
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    connectionString = "Server=100.125.117.70,1433;Database=DriveNow_DB;User Id=sa;Password=Tobyy91218@;TrustServerCertificate=True;";
+                }
+
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }

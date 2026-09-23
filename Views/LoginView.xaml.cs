@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,6 +15,11 @@ namespace DriveNow.Views
     {
         // Sesión activa disponible globalmente para toda la app
         public static Empleado? EmpleadoActual { get; private set; }
+
+        public static void CerrarSesion()
+        {
+            EmpleadoActual = null;
+        }
 
         private readonly Storyboard _spinnerStoryboard;
 
@@ -58,6 +63,13 @@ namespace DriveNow.Views
                 if (empleado == null || !PasswordHelper.VerificarPassword(pass, empleado.PasswordHash))
                 {
                     MessageBox.Show("Correo o contraseña incorrectos.", "Error de Autenticación", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // 2.1 Verificar si la cuenta del empleado está activa
+                if (!empleado.Activo)
+                {
+                    MessageBox.Show("Esta cuenta se encuentra inactiva o dada de baja. Comuníquese con la administración.", "Acceso Bloqueado", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 

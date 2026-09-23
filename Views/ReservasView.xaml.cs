@@ -1,11 +1,10 @@
-﻿using DriveNow.Data;
+using DriveNow.Data;
 using DriveNow.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Security.Policy;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -39,15 +38,15 @@ namespace DriveNow.Views
         public ReservasView()
         {
             InitializeComponent();
-            dpFechaInicio.SelectedDate = DateTime.Today; 
-            dpFechaFin.SelectedDate = DateTime.Today.AddDays(3); 
+            dpFechaInicio.SelectedDate = DateTime.Today;
+            dpFechaFin.SelectedDate = DateTime.Today.AddDays(3);
             Loaded += ReservasView_Loaded;
         }
 
         private async void ReservasView_Loaded(object sender, RoutedEventArgs e)
         {
             AplicarPermisosSegunRol();
-            await CargarDatosInicialesAsync(); 
+            await CargarDatosInicialesAsync();
         }
 
         private void AplicarPermisosSegunRol()
@@ -72,11 +71,10 @@ namespace DriveNow.Views
         {
             try
             {
-                using var context = new DriveNowDbContext(); 
+                using var context = new DriveNowDbContext();
 
                 _catalogoCategorias = await context.Categorias.ToListAsync();
 
-                // Combo de Categorías: Opción inicial "Todas" + categorías reales
                 var listaCombo = new List<Categoria>
                 {
                     new Categoria { IdCategoria = 0, Nombre = "Todas las categorías" }
@@ -88,71 +86,73 @@ namespace DriveNow.Views
                 _catalogoVehiculos = await context.Vehiculos
                     .Include(v => v.Categoria)
                     .Include(v => v.Estado)
-                    .ToListAsync(); 
+                    .Where(v => v.Activo)
+                    .ToListAsync();
 
                 var reservas = await context.Reservas
                     .Include(r => r.Cliente)
-                    .Include(r => r.Vehiculo)
+                    .Include(r => r.Empleado) // <-- INCLUYE AL OPERADOR QUE CREÓ LA RESERVA
+                    .Include(r => r.Vehiculo!)
                         .ThenInclude(v => v.Categoria)
                     .Include(r => r.Estado)
                     .OrderByDescending(r => r.IdReserva)
-                    .ToListAsync(); 
+                    .ToListAsync();
 
-                _listaReservas = new ObservableCollection<Reserva>(reservas);  
-                dgvReservas.ItemsSource = _listaReservas; 
+                _listaReservas = new ObservableCollection<Reserva>(reservas);
+                dgvReservas.ItemsSource = _listaReservas;
 
-                RefrescarVehiculosDisponibles();  
-                ActualizarTableroDisponibilidad();  
+                RefrescarVehiculosDisponibles();
+                ActualizarTableroDisponibilidad();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar reservas: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error); 
+                MessageBox.Show($"Error al cargar reservas: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private async void btnBuscarClienteReserva_Click(object sender, RoutedEventArgs e)
         {
-            string busqueda = txtDniCliente.Text.Trim(); 
-            if (string.IsNullOrWhiteSpace(busqueda)) return; 
+            string busqueda = txtDniCliente.Text.Trim();
+            if (string.IsNullOrWhiteSpace(busqueda)) return;
 
             try
             {
-                using var context = new DriveNowDbContext(); 
-                _clienteActual = await context.Clientes.FirstOrDefaultAsync(c =>  
-                    c.Dni == busqueda || (c.Nombre + " " + c.Apellido).Contains(busqueda)); 
+                using var context = new DriveNowDbContext();
+                _clienteActual = await context.Clientes.FirstOrDefaultAsync(c =>
+                    (c.Dni == busqueda || (c.Nombre + " " + c.Apellido).Contains(busqueda)) && c.Activo);
 
-                if (_clienteActual != null) 
+                if (_clienteActual != null)
                 {
-                    if (!_clienteActual.LicenciaVigente) 
+                    if (!_clienteActual.LicenciaVigente)
                     {
-                        MessageBox.Show("El cliente tiene la licencia de conducir vencida. No puede realizar reservas.", "Bloqueo Operativo", MessageBoxButton.OK, MessageBoxImage.Warning); 
-                        _clienteActual = null; 
-                        lblClienteSeleccionado.Text = "Cliente: Bloqueado (Licencia Vencida)"; 
-                        return;  
+                        MessageBox.Show("El cliente tiene la licencia de conducir vencida. No puede realizar reservas.", "Bloqueo Operativo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        _clienteActual = null;
+                        lblClienteSeleccionado.Text = "Cliente: Bloqueado (Licencia Vencida)";
+                        return;
                     }
-                    lblClienteSeleccionado.Text = $"Cliente: {_clienteActual.NombreCompleto} (DNI: {_clienteActual.Dni})"; 
+                    lblClienteSeleccionado.Text = $"Cliente: {_clienteActual.NombreCompleto} (DNI: {_clienteActual.Dni})";
                 }
                 else
                 {
-                    MessageBox.Show("Cliente no encontrado en la base de datos.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information); 
-                    lblClienteSeleccionado.Text = "Cliente: No encontrado"; 
+                    MessageBox.Show("Cliente no encontrado en el padrón activo.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    lblClienteSeleccionado.Text = "Cliente: No encontrado";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); 
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void dpFechas_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
-            RefrescarVehiculosDisponibles(); 
+            RefrescarVehiculosDisponibles();
             CalcularPresupuesto();
         }
 
         private void cmbCategoriaReserva_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            RefrescarVehiculosDisponibles(); 
+            RefrescarVehiculosDisponibles();
         }
 
         private void cmbVehiculosDisponibles_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -162,37 +162,34 @@ namespace DriveNow.Views
 
         private void RefrescarVehiculosDisponibles()
         {
-            if (cmbVehiculosDisponibles == null || !dpFechaInicio.SelectedDate.HasValue || !dpFechaFin.SelectedDate.HasValue)  
-                return;  
+            if (cmbVehiculosDisponibles == null || !dpFechaInicio.SelectedDate.HasValue || !dpFechaFin.SelectedDate.HasValue)
+                return;
 
-            DateTime inicio = dpFechaInicio.SelectedDate.Value.Date;  
-            DateTime fin = dpFechaFin.SelectedDate.Value.Date; 
+            DateTime inicio = dpFechaInicio.SelectedDate.Value.Date;
+            DateTime fin = dpFechaFin.SelectedDate.Value.Date;
 
             int idCatSeleccionada = (cmbCategoriaReserva.SelectedValue is int id) ? id : 0;
 
             var disponibles = _catalogoVehiculos.Where(v =>
             {
-            // Filtro por categoría (0 = Todas)
-            if (idCatSeleccionada > 0 && v.IdCategoria != idCatSeleccionada)
-                return false;
+                if (idCatSeleccionada > 0 && v.IdCategoria != idCatSeleccionada)
+                    return false;
 
-            // Vehículos en taller no se reservan
-            if (v.Estado?.Nombre == "En Taller" || v.Estado?.Nombre == "Mantenimiento")
-                return false;
+                if (v.Estado?.Nombre == "En Taller" || v.Estado?.Nombre == "Mantenimiento")
+                    return false;
 
-            // Superposición de fechas con reservas no canceladas 
-            bool superpuesta = _listaReservas.Any(r =>
-                r.IdVehiculo == v.IdVehiculo &&
-                r.Estado?.Nombre != "Cancelada" &&
-                ((inicio >= r.FechaDesde && inicio <= r.FechaHasta) ||
-                 (fin >= r.FechaDesde && fin <= r.FechaHasta) ||
-                 (inicio <= r.FechaDesde && fin >= r.FechaHasta))); 
+                bool superpuesta = _listaReservas.Any(r =>
+                    r.IdVehiculo == v.IdVehiculo &&
+                    r.Estado?.Nombre != "Cancelada" &&
+                    ((inicio >= r.FechaDesde && inicio <= r.FechaHasta) ||
+                     (fin >= r.FechaDesde && fin <= r.FechaHasta) ||
+                     (inicio <= r.FechaDesde && fin >= r.FechaHasta)));
 
-                return !superpuesta; 
+                return !superpuesta;
             })
             .Select(v => new VehiculoDisponibleDto
             {
-            IdVehiculo = v.IdVehiculo,
+                IdVehiculo = v.IdVehiculo,
                 Patente = v.Patente,
                 MarcaModelo = v.MarcaModelo,
                 CategoriaNombre = v.Categoria?.Nombre ?? "Sin Cat.",
@@ -200,7 +197,7 @@ namespace DriveNow.Views
             })
             .ToList();
 
-        cmbVehiculosDisponibles.ItemsSource = disponibles;
+            cmbVehiculosDisponibles.ItemsSource = disponibles;
             if (disponibles.Count > 0)
                 cmbVehiculosDisponibles.SelectedIndex = 0;
             else
@@ -219,7 +216,7 @@ namespace DriveNow.Views
             }
 
             int dias = (dpFechaFin.SelectedDate.Value.Date - dpFechaInicio.SelectedDate.Value.Date).Days;
-            if (dias <= 0) dias = 1; // Mínimo 1 día de facturación
+            if (dias <= 0) dias = 1;
 
             lblDuracionDias.Text = $"Duración: {dias} día(s)";
 
@@ -238,12 +235,12 @@ namespace DriveNow.Views
 
         private void ActualizarTableroDisponibilidad()
         {
-            int total = _catalogoVehiculos.Count; 
-            if (total == 0) return; 
+            int total = _catalogoVehiculos.Count;
+            if (total == 0) return;
 
-            int ocupados = _catalogoVehiculos.Count(v => v.Estado?.Nombre == "Alquilado" || v.Estado?.Nombre == "Reservado"); 
-            int porcentaje = (int)((double)ocupados / total * 100); 
-            lblPorcentajeOcupacion.Text = $"{porcentaje}%"; 
+            int ocupados = _catalogoVehiculos.Count(v => v.Estado?.Nombre == "Alquilado" || v.Estado?.Nombre == "Reservado");
+            int porcentaje = (int)((double)ocupados / total * 100);
+            lblPorcentajeOcupacion.Text = $"{porcentaje}%";
 
             var listaKpis = new List<KpiCategoriaDto>();
             foreach (var cat in _catalogoCategorias)
@@ -264,74 +261,102 @@ namespace DriveNow.Views
 
         private async void btnConfirmarReserva_Click(object sender, RoutedEventArgs e)
         {
-            if (_clienteActual == null) 
+            if (_clienteActual == null)
             {
-                MessageBox.Show("Debe validar un cliente antes de crear la reserva.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning); 
-                return; 
+                MessageBox.Show("Debe validar un cliente antes de crear la reserva.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
 
-            if (!dpFechaInicio.SelectedDate.HasValue || !dpFechaFin.SelectedDate.HasValue) 
+            if (!dpFechaInicio.SelectedDate.HasValue || !dpFechaFin.SelectedDate.HasValue)
             {
-                MessageBox.Show("Seleccione el rango de fechas.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);  
-                return;  
+                MessageBox.Show("Seleccione el rango de fechas.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
 
-            if (dpFechaFin.SelectedDate.Value < dpFechaInicio.SelectedDate.Value)  
+            if (dpFechaFin.SelectedDate.Value < dpFechaInicio.SelectedDate.Value)
             {
-                MessageBox.Show("La fecha de fin no puede ser anterior a la fecha de inicio.", "Error en Fechas", MessageBoxButton.OK, MessageBoxImage.Error);  
-                return;  
+                MessageBox.Show("La fecha de fin no puede ser anterior a la fecha de inicio.", "Error en Fechas", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
-            if (cmbVehiculosDisponibles.SelectedItem is not VehiculoDisponibleDto autoSeleccionado)  
+            if (cmbVehiculosDisponibles.SelectedItem is not VehiculoDisponibleDto autoSeleccionado)
             {
-                MessageBox.Show("No hay vehículos disponibles seleccionados para las fechas elegidas.", "Sin disponibilidad", MessageBoxButton.OK, MessageBoxImage.Warning); 
-                return;  
+                MessageBox.Show("No hay vehículos disponibles seleccionados para las fechas elegidas.", "Sin disponibilidad", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
+
+            DateTime inicio = dpFechaInicio.SelectedDate.Value.Date;
+            DateTime fin = dpFechaFin.SelectedDate.Value.Date;
+            int idVehiculo = autoSeleccionado.IdVehiculo;
 
             try
             {
-                using var context = new DriveNowDbContext(); 
+                using var context = new DriveNowDbContext();
 
-                var estadoConfirmada = await context.Estados.FirstOrDefaultAsync(est => est.Nombre == "Confirmada" || est.Nombre == "Reservado") 
-                                       ?? await context.Estados.FirstAsync();  
+                // 1. Validar en BD que el vehículo continúe activo y disponible (sin derivación a taller o mantenimiento)
+                var vehiculoDb = await context.Vehiculos
+                    .Include(v => v.Estado)
+                    .FirstOrDefaultAsync(v => v.IdVehiculo == idVehiculo);
 
-                int idEmpleado = LoginView.EmpleadoActual?.IdEmpleado ?? 1;  
-
-                var nueva = new Reserva 
+                if (vehiculoDb == null || !vehiculoDb.Activo || vehiculoDb.Estado?.Nombre == "En Taller" || vehiculoDb.Estado?.Nombre == "Mantenimiento")
                 {
-                    FechaDesde = dpFechaInicio.SelectedDate.Value.Date, 
-                    FechaHasta = dpFechaFin.SelectedDate.Value.Date, 
-                    IdCliente = _clienteActual.IdCliente, 
-                    IdVehiculo = autoSeleccionado.IdVehiculo, 
+                    MessageBox.Show("El vehículo seleccionado ya no está disponible (inactivo o en taller). Por favor seleccione otro.", "Vehículo No Disponible", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await CargarDatosInicialesAsync();
+                    return;
+                }
+
+                // 2. Validar en BD para prevenir reservas duplicadas (double-booking) en caso de concurrencia
+                bool existeSuperposicion = await context.Reservas.AnyAsync(r =>
+                    r.IdVehiculo == idVehiculo &&
+                    r.Estado != null && r.Estado.Nombre != "Cancelada" &&
+                    inicio <= r.FechaHasta && fin >= r.FechaDesde);
+
+                if (existeSuperposicion)
+                {
+                    MessageBox.Show("El vehículo seleccionado acaba de ser reservado por otro operador para las fechas indicadas. Por favor elija otro auto.", "Conflicto de Reserva", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await CargarDatosInicialesAsync();
+                    return;
+                }
+
+                var estadoConfirmada = await context.Estados.FirstOrDefaultAsync(est => est.Nombre == "Confirmada" || est.Nombre == "Reservado")
+                                       ?? await context.Estados.FirstAsync();
+
+                int idEmpleado = LoginView.EmpleadoActual?.IdEmpleado ?? 1;
+
+                var nueva = new Reserva
+                {
+                    FechaDesde = inicio,
+                    FechaHasta = fin,
+                    IdCliente = _clienteActual.IdCliente,
+                    IdVehiculo = idVehiculo,
                     IdEmpleado = idEmpleado,
                     IdEstado = estadoConfirmada.IdEstado
-                }
-                ;
+                };
 
-                context.Reservas.Add(nueva); 
-                await context.SaveChangesAsync(); 
+                context.Reservas.Add(nueva);
+                await context.SaveChangesAsync();
 
-                // Reasociar navegación para que la tabla muestre los nombres de inmediato
-                nueva.Cliente = _clienteActual; 
-                nueva.Vehiculo = _catalogoVehiculos.First(v => v.IdVehiculo == autoSeleccionado.IdVehiculo); 
-                nueva.Estado = estadoConfirmada; 
+                nueva.Cliente = _clienteActual;
+                nueva.Vehiculo = _catalogoVehiculos.First(v => v.IdVehiculo == idVehiculo);
+                nueva.Estado = estadoConfirmada;
+                nueva.Empleado = LoginView.EmpleadoActual; // Muestra el nombre inmediatamente en la tabla
 
-                _listaReservas.Insert(0, nueva); 
-                RefrescarVehiculosDisponibles(); 
-                ActualizarTableroDisponibilidad(); 
+                _listaReservas.Insert(0, nueva);
+                RefrescarVehiculosDisponibles();
+                ActualizarTableroDisponibilidad();
 
                 MessageBox.Show($"Reserva {nueva.CodigoReserva} registrada con éxito.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                LimpiarFormulario(); 
+                LimpiarFormulario();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al guardar reserva: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); 
+                MessageBox.Show($"Error al guardar reserva: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private async void btnCancelarReservaFila_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.DataContext is Reserva reserva) 
+            if (sender is Button btn && btn.DataContext is Reserva reserva)
             {
                 if (reserva.Estado?.Nombre == "Cancelada")
                 {
@@ -339,51 +364,72 @@ namespace DriveNow.Views
                     return;
                 }
 
-                if (reserva.Estado?.Nombre == "Alquilado" || reserva.Alquiler != null) 
+                if (reserva.Estado?.Nombre == "Alquilado" || reserva.Alquiler != null)
                 {
-                    MessageBox.Show("No se puede cancelar una reserva que ya cuenta con un alquiler en curso o finalizado.", "Acción Denegada", MessageBoxButton.OK, MessageBoxImage.Warning); 
-                    return; 
+                    MessageBox.Show("No se puede cancelar una reserva que ya cuenta con un alquiler en curso o finalizado.", "Acción Denegada", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
 
                 var res = MessageBox.Show($"¿Desea cancelar la reserva {reserva.CodigoReserva}?", "Cancelar Reserva", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (res != MessageBoxResult.Yes) return; 
+                if (res != MessageBoxResult.Yes) return;
 
                 try
                 {
-                    using var context = new DriveNowDbContext(); 
-                    var estadoCancelada = await context.Estados.FirstOrDefaultAsync(est => est.Nombre == "Cancelada"); 
-                    var reservaDb = await context.Reservas.FindAsync(reserva.IdReserva); 
+                    using var context = new DriveNowDbContext();
+                    var estadoCancelada = await context.Estados.FirstOrDefaultAsync(est => est.Nombre == "Cancelada");
+                    var reservaDb = await context.Reservas.FindAsync(reserva.IdReserva);
 
-                    if (reservaDb != null && estadoCancelada != null) 
+                    if (reservaDb != null && estadoCancelada != null)
                     {
-                        reservaDb.IdEstado = estadoCancelada.IdEstado; 
-                        await context.SaveChangesAsync(); 
+                        reservaDb.IdEstado = estadoCancelada.IdEstado;
+                        await context.SaveChangesAsync();
 
-                        reserva.Estado = estadoCancelada; 
-                        dgvReservas.Items.Refresh(); 
-                        RefrescarVehiculosDisponibles(); 
-                        ActualizarTableroDisponibilidad(); 
+                        reserva.Estado = estadoCancelada;
+                        dgvReservas.Items.Refresh();
+                        RefrescarVehiculosDisponibles();
+                        ActualizarTableroDisponibilidad();
 
                         MessageBox.Show("Reserva cancelada exitosamente.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error al cancelar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); 
+                    MessageBox.Show($"Error al cancelar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
 
-        private void btnCancelarReserva_Click(object sender, RoutedEventArgs e) => LimpiarFormulario(); 
+        private void btnCancelarReserva_Click(object sender, RoutedEventArgs e) => LimpiarFormulario();
 
         private void LimpiarFormulario()
         {
-            _clienteActual = null; 
-            txtDniCliente.Clear(); 
-            lblClienteSeleccionado.Text = "Cliente: No seleccionado"; 
-            dpFechaInicio.SelectedDate = DateTime.Today; 
-            dpFechaFin.SelectedDate = DateTime.Today.AddDays(3); 
+            _clienteActual = null;
+            txtDniCliente.Clear();
+            lblClienteSeleccionado.Text = "Cliente: No seleccionado";
+            dpFechaInicio.SelectedDate = DateTime.Today;
+            dpFechaFin.SelectedDate = DateTime.Today.AddDays(3);
             CalcularPresupuesto();
+        }
+
+        private void txtBuscarReserva_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string filtro = txtBuscarReserva.Text.Trim().ToLower();
+            if (string.IsNullOrEmpty(filtro))
+            {
+                dgvReservas.ItemsSource = _listaReservas;
+            }
+            else
+            {
+                dgvReservas.ItemsSource = _listaReservas.Where(r =>
+                    r.CodigoReserva.ToLower().Contains(filtro) ||
+                    (r.Cliente != null && r.Cliente.NombreCompleto.ToLower().Contains(filtro)) ||
+                    (r.Cliente != null && r.Cliente.Dni.ToLower().Contains(filtro)) ||
+                    (r.Vehiculo != null && r.Vehiculo.Patente.ToLower().Contains(filtro)) ||
+                    (r.Vehiculo != null && r.Vehiculo.MarcaModelo.ToLower().Contains(filtro)) ||
+                    (r.Empleado != null && r.Empleado.NombreCompleto.ToLower().Contains(filtro)) ||
+                    (r.Estado != null && r.Estado.Nombre.ToLower().Contains(filtro))
+                ).ToList();
+            }
         }
     }
 }

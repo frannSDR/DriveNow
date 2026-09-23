@@ -19,6 +19,8 @@ namespace DriveNow.Models
         public int IdEstado { get; set; }
         public int IdCategoria { get; set; }
 
+        public bool Activo { get; set; } = true; // Borrado lógico
+
         [ForeignKey("IdEstado")]
         public virtual Estado? Estado { get; set; }
 

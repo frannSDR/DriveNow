@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DriveNow.Views.ReservasView"
+<UserControl x:Class="DriveNow.Views.ReservasView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="#0F172A">
@@ -6,11 +6,8 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Encabezado -->
             <RowDefinition Height="Auto"/>
-            <!-- Formulario Crear Reserva + Tablero Ocupación -->
             <RowDefinition Height="*"/>
-            <!-- Tabla de Reservas Registradas -->
         </Grid.RowDefinitions>
 
         <!-- ENCABEZADO -->
@@ -31,7 +28,6 @@
                 <StackPanel>
                     <TextBlock Text="📝 Crear nueva reserva" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
 
-                    <!-- Búsqueda / DNI del Cliente -->
                     <TextBlock Text="Cliente (DNI)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
                     <Grid Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
@@ -44,7 +40,6 @@
                     </Grid>
                     <TextBlock x:Name="lblClienteSeleccionado" Text="Cliente: No seleccionado" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10"/>
 
-                    <!-- Fechas Inicio y Fin -->
                     <UniformGrid Columns="2" Margin="0,0,0,10">
                         <StackPanel Margin="0,0,5,0">
                             <TextBlock Text="Fecha de Retiro" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
@@ -56,7 +51,6 @@
                         </StackPanel>
                     </UniformGrid>
 
-                    <!-- Categoría y Vehículo -->
                     <UniformGrid Columns="2" Margin="0,0,0,12">
                         <StackPanel Margin="0,0,5,0">
                             <TextBlock Text="Filtrar Categoría" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
@@ -72,7 +66,6 @@
                         </StackPanel>
                     </UniformGrid>
 
-                    <!-- Resumen del Presupuesto -->
                     <Border Background="#0F172A" CornerRadius="6" Padding="12" Margin="0,0,0,15" BorderBrush="#334155" BorderThickness="1">
                         <DockPanel LastChildFill="False">
                             <StackPanel DockPanel.Dock="Left">
@@ -86,7 +79,6 @@
                         </DockPanel>
                     </Border>
 
-                    <!-- Botones de Acción -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="Limpiar" Width="90" Height="35" Background="#334155" Foreground="White" 
                                 BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" Click="btnCancelarReserva_Click"/>
@@ -101,7 +93,6 @@
                 <StackPanel>
                     <TextBlock Text="📊 Tablero de disponibilidad" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
 
-                    <!-- Widget Ocupación -->
                     <Border Background="#0F172A" CornerRadius="8" Padding="15" Margin="0,0,0,15" HorizontalAlignment="Center" Width="140">
                         <StackPanel HorizontalAlignment="Center">
                             <TextBlock x:Name="lblPorcentajeOcupacion" Text="0%" FontSize="28" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center"/>
@@ -111,7 +102,6 @@
 
                     <TextBlock Text="Disponibilidad por Categoría" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" Margin="0,0,0,10"/>
 
-                    <!-- Lista dinámica de ocupación por categoría -->
                     <ItemsControl x:Name="icCategoriasOcupacion">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -137,7 +127,25 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="Reservas registradas" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                <!-- Barra de búsqueda y título de reservas -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <TextBlock Text="Reservas registradas" FontSize="15" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    
+                    <Grid HorizontalAlignment="Right" Width="320">
+                        <TextBox x:Name="txtBuscarReserva" Height="32" Background="#0F172A" Foreground="White" 
+                                 BorderBrush="#334155" Padding="8,5" TextChanged="txtBuscarReserva_TextChanged"/>
+                        <TextBlock Text="🔍 Buscar código, cliente, patente..." Foreground="#64748B" IsHitTestVisible="False"
+                                   Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock.Visibility>
+                                <Binding Path="Text.IsEmpty" ElementName="txtBuscarReserva">
+                                    <Binding.Converter>
+                                        <BooleanToVisibilityConverter/>
+                                    </Binding.Converter>
+                                </Binding>
+                            </TextBlock.Visibility>
+                        </TextBlock>
+                    </Grid>
+                </Grid>
 
                 <DataGrid x:Name="dgvReservas" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
                           Background="Transparent" BorderThickness="0" RowHeight="42" IsReadOnly="True"
@@ -188,27 +196,10 @@
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="CÓDIGO" Binding="{Binding CodigoReserva}" Width="100" FontWeight="Bold">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Margin" Value="16,0,0,0"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                            <DataGridTextColumn.HeaderStyle>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#0F172A"/>
-                                    <Setter Property="Foreground" Value="#94A3B8"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Height" Value="36"/>
-                                    <Setter Property="Padding" Value="16,0,10,0"/>
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                </Style>
-                            </DataGridTextColumn.HeaderStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Header="CLIENTE" Binding="{Binding Cliente.NombreCompleto}" Width="1.5*"/>
-                        <DataGridTextColumn Header="VEHÍCULO" Binding="{Binding Vehiculo.MarcaModelo}" Width="1.5*"/>
+                        <DataGridTextColumn Header="CÓDIGO" Binding="{Binding CodigoReserva}" Width="100" FontWeight="Bold"/>
+                        <DataGridTextColumn Header="CLIENTE" Binding="{Binding Cliente.NombreCompleto}" Width="1.4*"/>
+                        <DataGridTextColumn Header="OPERADOR" Binding="{Binding Empleado.NombreCompleto}" Width="1.2*"/>
+                        <DataGridTextColumn Header="VEHÍCULO" Binding="{Binding Vehiculo.MarcaModelo}" Width="1.3*"/>
                         <DataGridTextColumn Header="PATENTE" Binding="{Binding Vehiculo.Patente}" Width="100"/>
                         <DataGridTextColumn Header="DESDE" Binding="{Binding FechaDesde, StringFormat=\{0:dd/MM/yyyy\}}" Width="100"/>
                         <DataGridTextColumn Header="HASTA" Binding="{Binding FechaHasta, StringFormat=\{0:dd/MM/yyyy\}}" Width="100"/>

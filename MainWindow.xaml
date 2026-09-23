@@ -115,6 +115,9 @@
                     <Button x:Name="btnNavReservas" Content="📅   Gestión de Reservas" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavReservas_Click"/>
                     <Button x:Name="btnNavAlquileres" Content="🔑   Gestión de Alquileres" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavAlquileres_Click"/>
 
+                    <!-- Nueva pestaña: Historial personal del operador -->
+                    <Button x:Name="btnNavMisOperaciones" Content="📋   Mis Operaciones" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavMisOperaciones_Click"/>
+
                     <!-- Módulos con restricción -->
                     <Button x:Name="btnNavReportes" Content="📈   Reportes y Finanzas" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavReportes_Click"/>
                     <Button x:Name="btnNavUsuarios" Content="🛡️   Gestión de Personal" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavUsuarios_Click"/>

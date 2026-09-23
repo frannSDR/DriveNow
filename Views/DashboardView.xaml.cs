@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -41,10 +41,10 @@ namespace DriveNow.Views
             {
                 using var context = new DriveNowDbContext();
 
-                // 2. Métricas de Flota
-                int totalVehiculos = await context.Vehiculos.CountAsync();
-                int disponibles = await context.Vehiculos.CountAsync(v => v.Estado != null && v.Estado.Nombre == "Disponible");
-                int enTaller = await context.Vehiculos.CountAsync(v => v.Estado != null && (v.Estado.Nombre == "En Taller" || v.Estado.Nombre == "Mantenimiento"));
+                // 2. Métricas de Flota (filtrando borrado lógico)
+                int totalVehiculos = await context.Vehiculos.CountAsync(v => v.Activo);
+                int disponibles = await context.Vehiculos.CountAsync(v => v.Activo && v.Estado != null && v.Estado.Nombre == "Disponible");
+                int enTaller = await context.Vehiculos.CountAsync(v => v.Activo && v.Estado != null && (v.Estado.Nombre == "En Taller" || v.Estado.Nombre == "Mantenimiento"));
 
                 lblKpiDisponibles.Text = disponibles.ToString();
                 lblKpiTotalFlota.Text = $"{totalVehiculos} vehículos en flota total";
@@ -96,9 +96,9 @@ namespace DriveNow.Views
 
                 // 6. Últimos 5 contratos de alquiler
                 var ultimos = await context.Alquileres
-                    .Include(a => a.Reserva)
+                    .Include(a => a.Reserva!)
                         .ThenInclude(r => r.Cliente)
-                    .Include(a => a.Reserva)
+                    .Include(a => a.Reserva!)
                         .ThenInclude(r => r.Vehiculo)
                     .OrderByDescending(a => a.IdAlquiler)
                     .Take(5)

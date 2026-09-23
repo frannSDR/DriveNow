@@ -15,7 +15,7 @@ namespace DriveNow.Views
     public partial class UsuariosView : UserControl
     {
         private ObservableCollection<Empleado> _listaEmpleados = new ObservableCollection<Empleado>();
-        private Empleado? _empleadoEnEdicion = null; // null = Creando, con valor = Editando
+        private Empleado? _empleadoEnEdicion = null;
 
         public UsuariosView()
         {
@@ -44,8 +44,10 @@ namespace DriveNow.Views
         private async Task CargarEmpleadosAsync()
         {
             using var context = new DriveNowDbContext();
+            // Filtrar únicamente los empleados activos
             var empleados = await context.Empleados
                 .Include(emp => emp.Rol)
+                .Where(emp => emp.Activo)
                 .OrderBy(emp => emp.IdEmpleado)
                 .ToListAsync();
 
@@ -53,14 +55,12 @@ namespace DriveNow.Views
             dgvEmpleados.ItemsSource = _listaEmpleados;
         }
 
-        // Cargar datos en el formulario para editar
         private void btnEditarEmpleado_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is Empleado emp)
             {
                 _empleadoEnEdicion = emp;
 
-                // Llenar campos
                 txtDni.Text = emp.Dni;
                 txtNombre.Text = emp.Nombre;
                 txtApellido.Text = emp.Apellido;
@@ -68,11 +68,10 @@ namespace DriveNow.Views
                 txtPassword.Clear();
                 cmbRoles.SelectedValue = emp.IdRol;
 
-                // Actualizar interfaz al modo edición
                 lblTituloFormulario.Text = $"✏️ Editando Personal: {emp.NombreCompleto}";
                 lblPassAviso.Text = "Nueva Contraseña (dejar en blanco para mantener actual)";
                 btnGuardarUsuario.Content = "Actualizar Cambios";
-                btnGuardarUsuario.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981")); // Verde
+                btnGuardarUsuario.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
                 btnCancelarEdicion.Visibility = Visibility.Visible;
                 btnLimpiar.Visibility = Visibility.Collapsed;
             }
@@ -94,7 +93,6 @@ namespace DriveNow.Views
                 return;
             }
 
-            // Si es un alta nueva, la contraseña sí es obligatoria
             if (_empleadoEnEdicion == null && string.IsNullOrWhiteSpace(pass))
             {
                 MessageBox.Show("Debe asignar una contraseña inicial para crear al empleado.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -107,31 +105,30 @@ namespace DriveNow.Views
             {
                 using var context = new DriveNowDbContext();
 
-                // Validar unicidad de Email (excluyendo al que estamos editando)
                 bool emailExiste = await context.Empleados.AnyAsync(emp =>
                     emp.Email == email &&
+                    emp.Activo &&
                     (_empleadoEnEdicion == null || emp.IdEmpleado != _empleadoEnEdicion.IdEmpleado));
 
                 if (emailExiste)
                 {
-                    MessageBox.Show("Ya existe otro empleado registrado con ese correo.", "Email Duplicado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Ya existe otro empleado activo registrado con ese correo.", "Email Duplicado", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Validar unicidad de DNI (excluyendo al que estamos editando)
                 bool dniExiste = await context.Empleados.AnyAsync(emp =>
                     emp.Dni == dni &&
+                    emp.Activo &&
                     (_empleadoEnEdicion == null || emp.IdEmpleado != _empleadoEnEdicion.IdEmpleado));
 
                 if (dniExiste)
                 {
-                    MessageBox.Show("Ya existe otro empleado registrado con ese DNI.", "DNI Duplicado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Ya existe otro empleado activo registrado con ese DNI.", "DNI Duplicado", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 if (_empleadoEnEdicion == null)
                 {
-                    // --- MODO ALTA ---
                     var nuevo = new Empleado
                     {
                         Dni = dni,
@@ -139,7 +136,8 @@ namespace DriveNow.Views
                         Apellido = apellido,
                         Email = email,
                         PasswordHash = PasswordHelper.HashearPassword(pass),
-                        IdRol = idRol
+                        IdRol = idRol,
+                        Activo = true
                     };
 
                     context.Empleados.Add(nuevo);
@@ -148,7 +146,6 @@ namespace DriveNow.Views
                 }
                 else
                 {
-                    // --- MODO ACTUALIZACIÓN ---
                     var empDb = await context.Empleados.FindAsync(_empleadoEnEdicion.IdEmpleado);
                     if (empDb != null)
                     {
@@ -158,7 +155,6 @@ namespace DriveNow.Views
                         empDb.Email = email;
                         empDb.IdRol = idRol;
 
-                        // Solo se actualiza el hash si el SuperAdmin escribió una contraseña nueva
                         if (!string.IsNullOrWhiteSpace(pass))
                         {
                             empDb.PasswordHash = PasswordHelper.HashearPassword(pass);
@@ -178,15 +174,8 @@ namespace DriveNow.Views
             }
         }
 
-        private void btnCancelarEdicion_Click(object sender, RoutedEventArgs e)
-        {
-            ResetearFormulario();
-        }
-
-        private void btnLimpiar_Click(object sender, RoutedEventArgs e)
-        {
-            ResetearFormulario();
-        }
+        private void btnCancelarEdicion_Click(object sender, RoutedEventArgs e) => ResetearFormulario();
+        private void btnLimpiar_Click(object sender, RoutedEventArgs e) => ResetearFormulario();
 
         private void ResetearFormulario()
         {
@@ -202,7 +191,7 @@ namespace DriveNow.Views
             lblTituloFormulario.Text = "➕ Registrar Nuevo Miembro del Personal";
             lblPassAviso.Text = "Contraseña Inicial";
             btnGuardarUsuario.Content = "Guardar Usuario";
-            btnGuardarUsuario.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2563EB")); // Azul
+            btnGuardarUsuario.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2563EB"));
             btnCancelarEdicion.Visibility = Visibility.Collapsed;
             btnLimpiar.Visibility = Visibility.Visible;
         }
@@ -213,28 +202,22 @@ namespace DriveNow.Views
             {
                 if (empSeleccionado.IdEmpleado == LoginView.EmpleadoActual?.IdEmpleado)
                 {
-                    MessageBox.Show("No puedes eliminar tu propia cuenta en sesión activa.", "Acción Bloqueada", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("No puedes dar de baja tu propia cuenta en sesión activa.", "Acción Bloqueada", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                var res = MessageBox.Show($"¿Desea eliminar a {empSeleccionado.NombreCompleto} ({empSeleccionado.Rol?.Nombre})?", "Confirmar Baja", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var res = MessageBox.Show($"¿Desea dar de baja a {empSeleccionado.NombreCompleto} ({empSeleccionado.Rol?.Nombre})?", "Confirmar Baja", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (res != MessageBoxResult.Yes) return;
 
                 try
                 {
                     using var context = new DriveNowDbContext();
 
-                    bool tieneReservas = await context.Reservas.AnyAsync(r => r.IdEmpleado == empSeleccionado.IdEmpleado);
-                    if (tieneReservas)
+                    var empADesactivar = await context.Empleados.FindAsync(empSeleccionado.IdEmpleado);
+                    if (empADesactivar != null)
                     {
-                        MessageBox.Show("No se puede eliminar el empleado porque tiene historial de reservas registradas.", "Acción Bloqueada", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    var empDb = await context.Empleados.FindAsync(empSeleccionado.IdEmpleado);
-                    if (empDb != null)
-                    {
-                        context.Empleados.Remove(empDb);
+                        // Borrado lógico
+                        empADesactivar.Activo = false;
                         await context.SaveChangesAsync();
                         _listaEmpleados.Remove(empSeleccionado);
 
@@ -243,12 +226,12 @@ namespace DriveNow.Views
                             ResetearFormulario();
                         }
 
-                        MessageBox.Show("Empleado eliminado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show("Empleado dado de baja exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error al eliminar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Error al procesar la baja: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

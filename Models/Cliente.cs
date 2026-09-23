@@ -19,9 +19,10 @@ namespace DriveNow.Models
         public string NroLicencia { get; set; } = string.Empty;
         public DateTime VencimientoLicencia { get; set; }
 
+        public bool Activo { get; set; } = true; // Borrado lógico
+
         public virtual ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
 
-        // Propiedades calculadas en tiempo real para la UI
         [NotMapped]
         public string NombreCompleto => $"{Nombre} {Apellido}";
 
