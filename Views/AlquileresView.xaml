@@ -57,14 +57,45 @@
                 <StackPanel>
                     <TextBlock Text="🚗 Registrar entrega de vehículo (Check-out)" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
 
-                    <TextBlock Text="Buscar Reserva (Código o DNI)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                    <TextBlock Text="Buscar Reserva (Código, DNI o Cliente)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
                     <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="txtBuscarReservaEntrega" Grid.Column="0" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
-                        <Button Grid.Column="1" Content="Cargar" Width="75" Height="35" Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnCargarReservaEntrega_Click"/>
+                        <TextBox x:Name="txtBuscarReservaEntrega" Grid.Column="0" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" TextChanged="txtBuscarReservaEntrega_TextChanged"/>
+                        <Button Grid.Column="1" Content="Cargar" Width="65" Height="35" Background="#334155" Foreground="White" BorderThickness="0" Margin="6,0,0,0" Cursor="Hand" Click="btnCargarReservaEntrega_Click"/>
+                        <Button x:Name="btnVerReservasPendientes" Grid.Column="2" Content="📋 Pendientes" Width="105" Height="35" Background="#2563EB" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Margin="6,0,0,0" Cursor="Hand" ToolTip="Ver listado de reservas activas listas para entrega" Click="btnVerReservasPendientes_Click"/>
+
+                        <!-- Popup de Reservas Pendientes -->
+                        <Popup x:Name="popupReservasPendientes" PlacementTarget="{Binding ElementName=txtBuscarReservaEntrega}" 
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Slide">
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" 
+                                    Padding="4" MaxHeight="240" Width="380">
+                                <ListBox x:Name="lstReservasPendientes" Background="Transparent" BorderThickness="0" 
+                                         SelectionMode="Single" SelectionChanged="lstReservasPendientes_SelectionChanged"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="6,5" Background="Transparent" CornerRadius="4">
+                                                <DockPanel LastChildFill="True">
+                                                    <Border DockPanel.Dock="Right" Background="#1E3A8A" CornerRadius="3" Padding="5,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding CodigoReserva, Mode=OneWay}" FontWeight="Bold" FontSize="10" Foreground="#60A5FA"/>
+                                                    </Border>
+                                                    <StackPanel Margin="0,0,8,0">
+                                                        <TextBlock Text="{Binding Cliente.NombreCompleto, Mode=OneWay}" FontWeight="Bold" Foreground="White" FontSize="12.5"/>
+                                                        <TextBlock FontSize="11" Foreground="#94A3B8" Margin="0,2,0,0">
+                                                            <Run Text="{Binding Vehiculo.MarcaModelo, Mode=OneWay}" Foreground="#38BDF8"/><Run Text=" ("/><Run Text="{Binding Vehiculo.Patente, Mode=OneWay}"/><Run Text=") • DNI: "/><Run Text="{Binding Cliente.Dni, Mode=OneWay}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
                     </Grid>
                     <TextBlock x:Name="lblDetalleReservaEntrega" Text="Reserva: No seleccionada" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10" TextTrimming="CharacterEllipsis"/>
 
@@ -89,14 +120,45 @@
                 <StackPanel>
                     <TextBlock Text="🔄 Registrar recepción y cierre (Check-in)" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
 
-                    <TextBlock Text="Buscar Alquiler (Código o Patente)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                    <TextBlock Text="Buscar Alquiler (Código, Patente o Cliente)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
                     <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="txtBuscarAlquilerDev" Grid.Column="0" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
-                        <Button Grid.Column="1" Content="Cargar" Width="75" Height="35" Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnCargarAlquilerDev_Click"/>
+                        <TextBox x:Name="txtBuscarAlquilerDev" Grid.Column="0" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" TextChanged="txtBuscarAlquilerDev_TextChanged"/>
+                        <Button Grid.Column="1" Content="Cargar" Width="65" Height="35" Background="#334155" Foreground="White" BorderThickness="0" Margin="6,0,0,0" Cursor="Hand" Click="btnCargarAlquilerDev_Click"/>
+                        <Button x:Name="btnVerAlquileresEnCurso" Grid.Column="2" Content="🚗 En Curso" Width="95" Height="35" Background="#059669" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Margin="6,0,0,0" Cursor="Hand" ToolTip="Ver listado de contratos en curso para recepción" Click="btnVerAlquileresEnCurso_Click"/>
+
+                        <!-- Popup de Alquileres en Curso -->
+                        <Popup x:Name="popupAlquileresEnCurso" PlacementTarget="{Binding ElementName=txtBuscarAlquilerDev}" 
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Slide">
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" 
+                                    Padding="4" MaxHeight="240" Width="380">
+                                <ListBox x:Name="lstAlquileresEnCurso" Background="Transparent" BorderThickness="0" 
+                                         SelectionMode="Single" SelectionChanged="lstAlquileresEnCurso_SelectionChanged"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="6,5" Background="Transparent" CornerRadius="4">
+                                                <DockPanel LastChildFill="True">
+                                                    <Border DockPanel.Dock="Right" Background="#064E3B" CornerRadius="3" Padding="5,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding CodigoAlquiler, Mode=OneWay}" FontWeight="Bold" FontSize="10" Foreground="#34D399"/>
+                                                    </Border>
+                                                    <StackPanel Margin="0,0,8,0">
+                                                        <TextBlock Text="{Binding Reserva.Cliente.NombreCompleto, Mode=OneWay}" FontWeight="Bold" Foreground="White" FontSize="12.5"/>
+                                                        <TextBlock FontSize="11" Foreground="#94A3B8" Margin="0,2,0,0">
+                                                            <Run Text="{Binding Reserva.Vehiculo.MarcaModelo, Mode=OneWay}" Foreground="#38BDF8"/><Run Text=" ("/><Run Text="{Binding Reserva.Vehiculo.Patente, Mode=OneWay}"/><Run Text=") • Salida: "/><Run Text="{Binding FechaEntregaReal, StringFormat='dd/MM HH:mm', Mode=OneWay}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
                     </Grid>
                     <TextBlock x:Name="lblDetalleAlquilerDev" Text="Alquiler: No seleccionado" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10" TextTrimming="CharacterEllipsis"/>
 
@@ -111,10 +173,42 @@
                         </StackPanel>
                     </UniformGrid>
 
-                    <DockPanel LastChildFill="False" Margin="0,0,0,15">
-                        <Button x:Name="btnAdjuntarDanio" Content="📷 Adjuntar Daño/Foto" Width="160" Height="32" Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand" DockPanel.Dock="Left" Click="btnAdjuntarDanio_Click"/>
-                        <TextBlock x:Name="lblFotoDanioStatus" Text="Sin daños reportados" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="10,0,0,0" DockPanel.Dock="Left"/>
-                    </DockPanel>
+                    <!-- Inspección de Daños y Novedades -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="Inspección de Estado y Daños" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="btnInspeccionDanos" Content="📋 Inspección / Daños" Width="165" Height="34" 
+                                    Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand" 
+                                    Click="btnInspeccionDanos_Click"/>
+
+                            <TextBlock x:Name="lblFotoDanioStatus" Grid.Column="1" Text="✓ Sin novedades ni daños reportados" 
+                                       Foreground="#10B981" FontSize="11" VerticalAlignment="Center" Margin="10,0,0,0" 
+                                       TextTrimming="CharacterEllipsis"/>
+                        </Grid>
+
+                        <!-- Badge si se registró daño -->
+                        <Border x:Name="bdrResumenDano" Visibility="Collapsed" Background="#450A0A" BorderBrush="#DC2626" 
+                                BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,6,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="lblDanoRegistradoTitulo" Text="⚠️ Daño Reportado en Retorno:" FontWeight="Bold" FontSize="11" Foreground="#FCA5A5"/>
+                                    <TextBlock x:Name="lblDanoRegistradoDetalle" Text="Paragolpes Delantero (Moderado)" FontSize="11" Foreground="#FECACA" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="✕ Quitar" Width="65" Height="24" Background="#7F1D1D" Foreground="#FCA5A5" 
+                                        FontSize="11" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" 
+                                        Click="btnQuitarDano_Click"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
 
                     <Button Content="Finalizar Alquiler y Liberar Auto" Height="35" Background="#10B981" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnFinalizarAlquiler_Click"/>
                 </StackPanel>
@@ -238,6 +332,18 @@
                                             BorderThickness="0" Cursor="Hand" ToolTip="Ver detalle de inspección y evidencia fotográfica"
                                             Visibility="{Binding TieneDanos, Converter={StaticResource BoolToVisConverter}}"
                                             Click="btnVerDanos_Click"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Factura PDF -->
+                        <DataGridTemplateColumn Header="FACTURA" Width="95">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="📄 Factura" Height="24" Width="75"
+                                            Background="#1E3A8A" Foreground="#93C5FD" FontWeight="Bold" FontSize="11"
+                                            BorderThickness="0" Cursor="Hand" ToolTip="Generar o descargar factura oficial en PDF"
+                                            Click="btnGenerarFacturaFila_Click"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

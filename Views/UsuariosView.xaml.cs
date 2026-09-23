@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,15 +44,36 @@ namespace DriveNow.Views
         private async Task CargarEmpleadosAsync()
         {
             using var context = new DriveNowDbContext();
-            // Filtrar únicamente los empleados activos
-            var empleados = await context.Empleados
+            var query = context.Empleados
                 .Include(emp => emp.Rol)
-                .Where(emp => emp.Activo)
+                .AsQueryable();
+
+            int filtroIndex = cmbFiltroEstadoEmpleado?.SelectedIndex ?? 0;
+            if (filtroIndex == 1) // Inactivos / Dados de baja
+            {
+                query = query.Where(emp => !emp.Activo);
+            }
+            else if (filtroIndex == 2) // Todos los registros
+            {
+                // Sin restricción de activo
+            }
+            else // Solo activos (por defecto)
+            {
+                query = query.Where(emp => emp.Activo);
+            }
+
+            var empleados = await query
                 .OrderBy(emp => emp.IdEmpleado)
                 .ToListAsync();
 
             _listaEmpleados = new ObservableCollection<Empleado>(empleados);
             dgvEmpleados.ItemsSource = _listaEmpleados;
+        }
+
+        private async void cmbFiltroEstadoEmpleado_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            await CargarEmpleadosAsync();
         }
 
         private void btnEditarEmpleado_Click(object sender, RoutedEventArgs e)
@@ -219,7 +240,6 @@ namespace DriveNow.Views
                         // Borrado lógico
                         empADesactivar.Activo = false;
                         await context.SaveChangesAsync();
-                        _listaEmpleados.Remove(empSeleccionado);
 
                         if (_empleadoEnEdicion?.IdEmpleado == empSeleccionado.IdEmpleado)
                         {
@@ -227,11 +247,44 @@ namespace DriveNow.Views
                         }
 
                         MessageBox.Show("Empleado dado de baja exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await CargarEmpleadosAsync();
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error al procesar la baja: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async void btnReactivarEmpleado_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is Empleado empSeleccionado)
+            {
+                var res = MessageBox.Show(
+                    $"¿Desea reactivar a {empSeleccionado.NombreCompleto} ({empSeleccionado.Rol?.Nombre}) y habilitar nuevamente sus accesos al sistema?",
+                    "Confirmar Reactivación",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (res != MessageBoxResult.Yes) return;
+
+                try
+                {
+                    using var context = new DriveNowDbContext();
+                    var empDb = await context.Empleados.FindAsync(empSeleccionado.IdEmpleado);
+                    if (empDb != null)
+                    {
+                        empDb.Activo = true;
+                        await context.SaveChangesAsync();
+
+                        MessageBox.Show($"El empleado {empDb.NombreCompleto} ha sido reactivado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await CargarEmpleadosAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al reactivar el empleado: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

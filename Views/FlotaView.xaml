@@ -22,26 +22,52 @@
                 </StackPanel>
             </DockPanel>
 
-            <UniformGrid Columns="4">
-                <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
+            <!-- TARJETAS DE ESTADO INTERACTIVAS (FILTRO RÁPIDO) -->
+            <UniformGrid Columns="5">
+                <!-- 0. Toda la Flota -->
+                <Border x:Name="cardFiltroTodos" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
+                        Cursor="Hand" BorderThickness="2" BorderBrush="#38BDF8" Tag="Todos"
+                        ToolTip="Ver toda la flota activa" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
+                    <StackPanel>
+                        <TextBlock Text="🚗 TODA LA FLOTA" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                        <TextBlock x:Name="lblTotalFlota" Text="0" FontSize="24" FontWeight="Bold" Foreground="#38BDF8" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 1. Disponibles -->
+                <Border x:Name="cardFiltroDisponibles" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
+                        Cursor="Hand" BorderThickness="2" BorderBrush="Transparent" Tag="Disponible"
+                        ToolTip="Filtrar vehículos disponibles para alquilar" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
                     <StackPanel>
                         <TextBlock Text="✅ DISPONIBLES" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
                         <TextBlock x:Name="lblDisponibles" Text="0" FontSize="24" FontWeight="Bold" Foreground="#4ADE80" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
-                <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
+
+                <!-- 2. Alquilados -->
+                <Border x:Name="cardFiltroAlquilados" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
+                        Cursor="Hand" BorderThickness="2" BorderBrush="Transparent" Tag="Alquilado"
+                        ToolTip="Filtrar vehículos actualmente en alquiler" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
                     <StackPanel>
                         <TextBlock Text="🔑 ALQUILADOS" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
                         <TextBlock x:Name="lblAlquilados" Text="0" FontSize="24" FontWeight="Bold" Foreground="#FBBF24" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
-                <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
+
+                <!-- 3. Reservados -->
+                <Border x:Name="cardFiltroReservados" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
+                        Cursor="Hand" BorderThickness="2" BorderBrush="Transparent" Tag="Reservado"
+                        ToolTip="Filtrar vehículos con reserva confirmada" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
                     <StackPanel>
                         <TextBlock Text="📅 RESERVADOS" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
                         <TextBlock x:Name="lblReservados" Text="0" FontSize="24" FontWeight="Bold" Foreground="#60A5FA" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
-                <Border Background="#1E293B" CornerRadius="8" Padding="15" Margin="4">
+
+                <!-- 4. Mantenimiento -->
+                <Border x:Name="cardFiltroMantenimiento" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
+                        Cursor="Hand" BorderThickness="2" BorderBrush="Transparent" Tag="Mantenimiento"
+                        ToolTip="Filtrar vehículos en taller o servicio mecánico" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
                     <StackPanel>
                         <TextBlock Text="🔧 MANTENIMIENTO" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
                         <TextBlock x:Name="lblMantenimiento" Text="0" FontSize="24" FontWeight="Bold" Foreground="#F87171" Margin="0,4,0,0"/>
@@ -58,23 +84,49 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Barra de Búsqueda -->
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <TextBox x:Name="txtBuscar" Width="300" Height="35" HorizontalAlignment="Left"
-                             Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="10,7"
-                             TextChanged="txtBuscar_TextChanged"/>
+                <!-- Barra de Herramientas y Filtros Combinados -->
+                <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
+                    <!-- Buscador en tiempo real -->
+                    <Grid DockPanel.Dock="Left" Width="260" Margin="0,0,12,0">
+                        <TextBox x:Name="txtBuscar" Height="35"
+                                 Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="10,7"
+                                 TextChanged="txtBuscar_TextChanged"/>
+                        <TextBlock Text="🔍 Buscar patente, modelo..." Foreground="#64748B" IsHitTestVisible="False"
+                                   Margin="12,8,0,0" VerticalAlignment="Top">
+                            <TextBlock.Visibility>
+                                <Binding Path="Text.IsEmpty" ElementName="txtBuscar">
+                                    <Binding.Converter>
+                                        <BooleanToVisibilityConverter/>
+                                    </Binding.Converter>
+                                </Binding>
+                            </TextBlock.Visibility>
+                        </TextBlock>
+                    </Grid>
 
-                    <TextBlock Text="🔍 Buscar patente, modelo..." Foreground="#64748B" IsHitTestVisible="False"
-                               Margin="12,8,0,0" HorizontalAlignment="Left">
-                        <TextBlock.Visibility>
-                            <Binding Path="Text.IsEmpty" ElementName="txtBuscar">
-                                <Binding.Converter>
-                                    <BooleanToVisibilityConverter/>
-                                </Binding.Converter>
-                            </Binding>
-                        </TextBlock.Visibility>
-                    </TextBlock>
-                </Grid>
+                    <!-- Selector de Categoría -->
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="Categoría:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
+                        <ComboBox x:Name="cmbFiltroCategoria" Width="165" Height="35"
+                                  DisplayMemberPath="Nombre" SelectedValuePath="IdCategoria"
+                                  SelectionChanged="FiltroCombinado_SelectionChanged"/>
+                    </StackPanel>
+
+                    <!-- Selector de Estado -->
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="Estado:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
+                        <ComboBox x:Name="cmbFiltroEstado" Width="165" Height="35"
+                                  SelectionChanged="FiltroCombinado_SelectionChanged"/>
+                    </StackPanel>
+
+                    <!-- Indicador de Resultados y Botón Limpiar -->
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="lblContadorFiltrados" Text="Mostrando: 0 vehículos" Foreground="#38BDF8" FontSize="12" 
+                                   VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="SemiBold"/>
+                        <Button x:Name="btnLimpiarFiltrosFlota" Content="🧹 Limpiar Filtros" Height="35" Padding="14,0"
+                                Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"
+                                Click="btnLimpiarFiltrosFlota_Click"/>
+                    </StackPanel>
+                </DockPanel>
 
                 <!-- DataGrid de Vehículos -->
                 <DataGrid x:Name="dgvFlota" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
@@ -201,7 +253,7 @@
                 <UniformGrid Columns="3" Margin="0,0,0,12">
                     <StackPanel Margin="0,0,8,0">
                         <TextBlock Text="Categoría" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <ComboBox x:Name="cmbCategoria" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6" 
+                        <ComboBox x:Name="cmbCategoria" Height="35"
                                   DisplayMemberPath="Nombre" SelectedValuePath="IdCategoria"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,8,0">
@@ -210,7 +262,7 @@
                     </StackPanel>
                     <StackPanel>
                         <TextBlock Text="Estado" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <ComboBox x:Name="cmbEstado" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6"
+                        <ComboBox x:Name="cmbEstado" Height="35"
                                   DisplayMemberPath="Nombre" SelectedValuePath="IdEstado"/>
                     </StackPanel>
                 </UniformGrid>

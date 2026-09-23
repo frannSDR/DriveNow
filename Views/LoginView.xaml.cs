@@ -13,12 +13,12 @@ namespace DriveNow.Views
 {
     public partial class LoginView : Window
     {
-        // Sesión activa disponible globalmente para toda la app
-        public static Empleado? EmpleadoActual { get; private set; }
+        // Sesión activa disponible desacoplada mediante UserSession
+        public static Empleado? EmpleadoActual => UserSession.Current.EmpleadoActual;
 
         public static void CerrarSesion()
         {
-            EmpleadoActual = null;
+            UserSession.Current.CerrarSesion();
         }
 
         private readonly Storyboard _spinnerStoryboard;
@@ -73,8 +73,8 @@ namespace DriveNow.Views
                     return;
                 }
 
-                // 3. Autenticación exitosa: guardamos sesión y abrimos ventana principal
-                EmpleadoActual = empleado;
+                // 3. Autenticación exitosa: guardamos sesión en el servicio y abrimos ventana principal
+                UserSession.Current.IniciarSesion(empleado);
 
                 await Task.Delay(400);
 

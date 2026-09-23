@@ -6,10 +6,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
     <PackageReference Include="LTRData.LoadingIndicators.WPF" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11">
       <PrivateAssets>all</PrivateAssets>
@@ -17,6 +19,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageReference Include="QuestPDF" Version="2026.9.0" />
   </ItemGroup>
 
   <ItemGroup>

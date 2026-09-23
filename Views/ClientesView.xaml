@@ -1,7 +1,13 @@
 <UserControl x:Class="DriveNow.Views.ClientesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:DriveNow.Converters"
              Background="#0F172A">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
+    </UserControl.Resources>
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -19,7 +25,7 @@
         <!-- PANELES SUPERIORES -->
         <Grid Grid.Row="1" Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="1.45*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -29,59 +35,99 @@
                     <TextBlock x:Name="lblTituloFormularioCliente" Text="👤 Registro de cliente" 
                                FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
 
-                    <!-- Nombre y Apellido -->
-                    <UniformGrid Columns="2" Margin="0,0,0,10">
+                    <!-- Fila 1: Nombre y Apellido -->
+                    <UniformGrid Columns="2" Margin="0,0,0,8">
                         <StackPanel Margin="0,0,5,0">
                             <TextBlock Text="Nombre" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtNombre" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBox x:Name="txtNombre" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
                         </StackPanel>
                         <StackPanel Margin="5,0,0,0">
                             <TextBlock Text="Apellido" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtApellido" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBox x:Name="txtApellido" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
                         </StackPanel>
                     </UniformGrid>
 
-                    <!-- DNI y Teléfono -->
-                    <UniformGrid Columns="2" Margin="0,0,0,10">
+                    <!-- Fila 2: DNI y Fecha de Nacimiento -->
+                    <UniformGrid Columns="2" Margin="0,0,0,8">
                         <StackPanel Margin="0,0,5,0">
-                            <TextBlock Text="DNI" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtDni" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBlock Text="DNI / Documento" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtDni" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
                         </StackPanel>
                         <StackPanel Margin="5,0,0,0">
+                            <TextBlock Text="Fecha Nacimiento (Mín. 21 años)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <DatePicker x:Name="dpFechaNacimiento" Height="33"/>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <!-- Fila 3: Teléfono y Correo -->
+                    <UniformGrid Columns="2" Margin="0,0,0,8">
+                        <StackPanel Margin="0,0,5,0">
                             <TextBlock Text="Teléfono" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtTelefono" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBox x:Name="txtTelefono" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
+                        </StackPanel>
+                        <StackPanel Margin="5,0,0,0">
+                            <TextBlock Text="Correo Electrónico" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtCorreo" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
                         </StackPanel>
                     </UniformGrid>
 
-                    <!-- Correo Electrónico -->
-                    <TextBlock Text="Correo Electrónico" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                    <TextBox x:Name="txtCorreo" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" Margin="0,0,0,10"/>
+                    <!-- Fila 4: Domicilio, Localidad, Provincia -->
+                    <UniformGrid Columns="3" Margin="0,0,0,8">
+                        <StackPanel Margin="0,0,4,0">
+                            <TextBlock Text="Domicilio (Calle/N°)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtDomicilio" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
+                        </StackPanel>
+                        <StackPanel Margin="4,0,4,0">
+                            <TextBlock Text="Localidad / Ciudad" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtLocalidad" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
+                        </StackPanel>
+                        <StackPanel Margin="4,0,0,0">
+                            <TextBlock Text="Provincia" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtProvincia" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
+                        </StackPanel>
+                    </UniformGrid>
 
-                    <!-- N° Licencia y Vencimiento -->
-                    <UniformGrid Columns="2" Margin="0,0,0,15">
-                        <StackPanel Margin="0,0,5,0">
+                    <!-- Fila 5: Licencia, Vencimiento, Nacionalidad -->
+                    <UniformGrid Columns="3" Margin="0,0,0,8">
+                        <StackPanel Margin="0,0,4,0">
                             <TextBlock Text="N° Licencia" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtLicencia" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBox x:Name="txtLicencia" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
+                        </StackPanel>
+                        <StackPanel Margin="4,0,4,0">
+                            <TextBlock Text="Venc. Licencia" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <DatePicker x:Name="dpVencimiento" Height="33"/>
+                        </StackPanel>
+                        <StackPanel Margin="4,0,0,0">
+                            <TextBlock Text="Nacionalidad" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtNacionalidad" Text="Argentina" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <!-- Fila 6: Contacto de Emergencia -->
+                    <UniformGrid Columns="2" Margin="0,0,0,12">
+                        <StackPanel Margin="0,0,5,0">
+                            <TextBlock Text="Contacto Emergencia (Nombre)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtContactoEmergenciaNombre" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
                         </StackPanel>
                         <StackPanel Margin="5,0,0,0">
-                            <TextBlock Text="Venc. Licencia" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <DatePicker x:Name="dpVencimiento" Height="35"/>
+                            <TextBlock Text="Contacto Emergencia (Teléfono)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtContactoEmergenciaTelefono" Height="33" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,5"/>
                         </StackPanel>
                     </UniformGrid>
 
                     <!-- Botones de Acción -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button x:Name="btnCancelarEdicion" Content="Cancelar" Width="90" Height="35" 
+                        <Button x:Name="btnCancelarEdicion" Content="Cancelar" Width="90" Height="34" 
                                 Background="#475569" Foreground="White" BorderThickness="0" 
                                 Margin="0,0,10,0" Cursor="Hand" Visibility="Collapsed" 
                                 Click="btnCancelarEdicion_Click"/>
 
-                        <Button x:Name="btnLimpiarCliente" Content="Limpiar" Width="90" Height="35" 
+                        <Button x:Name="btnLimpiarCliente" Content="Limpiar" Width="90" Height="34" 
                                 Background="#334155" Foreground="White" BorderThickness="0" 
                                 Margin="0,0,10,0" Cursor="Hand" 
                                 Click="btnLimpiar_Click"/>
 
-                        <Button x:Name="btnGuardarCliente" Content="Guardar Registro" Width="140" Height="35" 
+                        <Button x:Name="btnGuardarCliente" Content="Guardar Registro" Width="145" Height="34" 
                                 Background="#2563EB" Foreground="White" FontWeight="Bold" 
                                 BorderThickness="0" Cursor="Hand" 
                                 Click="btnGuardarCliente_Click"/>
@@ -92,7 +138,7 @@
             <!-- MÓDULO DE VALIDACIÓN DE IDENTIDAD -->
             <Border Grid.Column="1" Background="#1E293B" CornerRadius="8" Padding="15" Margin="8,0,0,0">
                 <StackPanel>
-                    <TextBlock Text="🛡️ Validación de identidad" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                    <TextBlock Text="🛡️ Validación de identidad y solvencia" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
 
                     <!-- Buscador de DNI -->
                     <Grid Margin="0,0,0,15">
@@ -116,8 +162,12 @@
                                 </Border>
                             </DockPanel>
 
-                            <TextBlock x:Name="lblDniValidado" Text="DNI: -" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,10"/>
-                            <TextBlock x:Name="lblVencimientoTexto" Text="Estado de Licencia Vence: -" FontSize="13" Foreground="White" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="lblDniValidado" Text="DNI: -" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="lblEdadValidada" Text="Edad: -" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="lblDomicilioValidado" Text="Domicilio: -" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,6" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="lblContactoEmergenciaValidado" Text="Contacto Emergencia: -" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,10"/>
+
+                            <TextBlock x:Name="lblVencimientoTexto" Text="Estado de Licencia: -" FontSize="13" Foreground="White" Margin="0,0,0,4"/>
                             <ProgressBar x:Name="pbLicencia" Height="6" Value="100" Foreground="#10B981" Background="#334155" BorderThickness="0" Margin="0,0,0,6"/>
                             <TextBlock x:Name="lblLicenciaEstadoMsg" Text="Licencia válida y en regla" FontSize="11" Foreground="#34D399"/>
                         </StackPanel>
@@ -134,24 +184,36 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Barra de búsqueda y título de clientes -->
+                <!-- Barra de búsqueda, filtro de estado y título de clientes -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <TextBlock Text="Listado de clientes" FontSize="15" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                     
-                    <Grid HorizontalAlignment="Right" Width="300">
-                        <TextBox x:Name="txtBuscarCliente" Height="32" Background="#0F172A" Foreground="White" 
-                                 BorderBrush="#334155" Padding="8,5" TextChanged="txtBuscarCliente_TextChanged"/>
-                        <TextBlock Text="🔍 Buscar nombre, DNI, licencia..." Foreground="#64748B" IsHitTestVisible="False"
-                                   Margin="10,0,0,0" VerticalAlignment="Center">
-                            <TextBlock.Visibility>
-                                <Binding Path="Text.IsEmpty" ElementName="txtBuscarCliente">
-                                    <Binding.Converter>
-                                        <BooleanToVisibilityConverter/>
-                                    </Binding.Converter>
-                                </Binding>
-                            </TextBlock.Visibility>
-                        </TextBlock>
-                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <!-- Selector de Estado -->
+                        <TextBlock Text="Ver:" Foreground="#94A3B8" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox x:Name="cmbFiltroEstadoCliente" Width="195" Height="32" Margin="0,0,12,0"
+                                  SelectionChanged="cmbFiltroEstadoCliente_SelectionChanged">
+                            <ComboBoxItem Content="Solo Activos" IsSelected="True"/>
+                            <ComboBoxItem Content="Dados de Baja / Inactivos"/>
+                            <ComboBoxItem Content="Todos los Registros"/>
+                        </ComboBox>
+
+                        <!-- Campo de búsqueda -->
+                        <Grid Width="280">
+                            <TextBox x:Name="txtBuscarCliente" Height="32" Background="#0F172A" Foreground="White" 
+                                     BorderBrush="#334155" Padding="8,5" TextChanged="txtBuscarCliente_TextChanged"/>
+                            <TextBlock Text="🔍 Buscar nombre, DNI, licencia..." Foreground="#64748B" IsHitTestVisible="False"
+                                       Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock.Visibility>
+                                    <Binding Path="Text.IsEmpty" ElementName="txtBuscarCliente">
+                                        <Binding.Converter>
+                                            <BooleanToVisibilityConverter/>
+                                        </Binding.Converter>
+                                    </Binding>
+                                </TextBlock.Visibility>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
                 </Grid>
 
                 <DataGrid x:Name="dgvClientes" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
@@ -223,29 +285,59 @@
                             </DataGridTextColumn.HeaderStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="DNI" Binding="{Binding Dni}" Width="110"/>
-                        <DataGridTextColumn Header="TELÉFONO" Binding="{Binding Telefono}" Width="130"/>
-                        <DataGridTextColumn Header="CORREO" Binding="{Binding Correo}" Width="1.5*"/>
-                        <DataGridTextColumn Header="N° LICENCIA" Binding="{Binding NroLicencia}" Width="110"/>
-                        <DataGridTextColumn Header="VENCIMIENTO" Binding="{Binding VencimientoLicencia, StringFormat=\{0:dd/MM/yyyy\}}" Width="110"/>
-                        <DataGridTextColumn Header="ESTADO" Binding="{Binding EstadoLicencia}" Width="100"/>
+                        <DataGridTextColumn Header="DNI" Binding="{Binding Dni}" Width="105"/>
+                        <DataGridTextColumn Header="TELÉFONO" Binding="{Binding Telefono}" Width="120"/>
+                        <DataGridTextColumn Header="CORREO" Binding="{Binding Correo}" Width="1.3*"/>
+                        <DataGridTextColumn Header="DOMICILIO" Binding="{Binding DomicilioCompleto}" Width="1.5*"/>
+                        <DataGridTextColumn Header="N° LICENCIA" Binding="{Binding NroLicencia}" Width="105"/>
+                        <DataGridTextColumn Header="VENCIMIENTO" Binding="{Binding VencimientoLicencia, StringFormat=\{0:dd/MM/yyyy\}}" Width="105"/>
+                        <DataGridTextColumn Header="LICENCIA" Binding="{Binding EstadoLicencia}" Width="95"/>
 
-                        <!-- Columna de Acciones (Editar y Eliminar) -->
-                        <DataGridTemplateColumn x:Name="colAccionesCliente" Header="ACCIONES" Width="110">
+                        <!-- Estado del Registro (Activo / Inactivo) -->
+                        <DataGridTemplateColumn Header="ESTADO" Width="95">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border x:Name="bdrEstadoRegistro" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center"
+                                            Background="#065F46">
+                                        <TextBlock x:Name="lblEstadoRegistro" Text="ACTIVO" FontSize="10" FontWeight="Bold" Foreground="#34D399"/>
+                                    </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Activo}" Value="False">
+                                            <Setter TargetName="bdrEstadoRegistro" Property="Background" Value="#450A0A"/>
+                                            <Setter TargetName="lblEstadoRegistro" Property="Text" Value="INACTIVO"/>
+                                            <Setter TargetName="lblEstadoRegistro" Property="Foreground" Value="#F87171"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Columna de Acciones (Editar y Eliminar o Reactivar) -->
+                        <DataGridTemplateColumn x:Name="colAccionesCliente" Header="ACCIONES" Width="115">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <!-- Botón Editar -->
+                                        <!-- Botón Editar (solo si está Activo) -->
                                         <Button Content="✏️" Background="Transparent" Foreground="#38BDF8" 
                                                 BorderThickness="0" Cursor="Hand" Margin="0,0,8,0"
                                                 ToolTip="Editar cliente"
+                                                Visibility="{Binding Activo, Converter={StaticResource BoolToVisConverter}}"
                                                 Click="btnEditarCliente_Click"/>
 
-                                        <!-- Botón Eliminar -->
+                                        <!-- Botón Eliminar (solo si está Activo) -->
                                         <Button Content="🗑️" Background="Transparent" Foreground="#F87171" 
                                                 BorderThickness="0" Cursor="Hand" 
-                                                ToolTip="Eliminar cliente"
+                                                ToolTip="Dar de baja cliente"
+                                                Visibility="{Binding Activo, Converter={StaticResource BoolToVisConverter}}"
                                                 Click="btnEliminarCliente_Click"/>
+
+                                        <!-- Botón Reactivar (solo si está Inactivo) -->
+                                        <Button Content="♻️ Reactivar" Height="25" Padding="8,2"
+                                                Background="#065F46" Foreground="#34D399" FontWeight="Bold" FontSize="11"
+                                                BorderThickness="0" Cursor="Hand" 
+                                                ToolTip="Reactivar e incorporar al padrón activo"
+                                                Visibility="{Binding Activo, Converter={StaticResource InverseBoolToVisConverter}}"
+                                                Click="btnReactivarCliente_Click"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

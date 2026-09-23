@@ -52,9 +52,23 @@ namespace DriveNow.Views
             try
             {
                 using var context = new DriveNowDbContext();
-                // Solo cargamos clientes activos
-                var clientesDb = await context.Clientes
-                    .Where(c => c.Activo)
+                var query = context.Clientes.AsQueryable();
+
+                int filtroIndex = cmbFiltroEstadoCliente?.SelectedIndex ?? 0;
+                if (filtroIndex == 1) // Inactivos / Dados de baja
+                {
+                    query = query.Where(c => !c.Activo);
+                }
+                else if (filtroIndex == 2) // Todos los registros
+                {
+                    // Sin restricción de activo
+                }
+                else // Solo activos (por defecto)
+                {
+                    query = query.Where(c => c.Activo);
+                }
+
+                var clientesDb = await query
                     .OrderByDescending(c => c.IdCliente)
                     .ToListAsync();
 
@@ -67,6 +81,12 @@ namespace DriveNow.Views
             }
         }
 
+        private async void cmbFiltroEstadoCliente_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            await CargarClientesDesdeBdAsync();
+        }
+
         private void btnEditarCliente_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is Cliente cliente)
@@ -76,10 +96,17 @@ namespace DriveNow.Views
                 txtNombre.Text = cliente.Nombre;
                 txtApellido.Text = cliente.Apellido;
                 txtDni.Text = cliente.Dni;
+                dpFechaNacimiento.SelectedDate = cliente.FechaNacimiento;
                 txtTelefono.Text = cliente.Telefono ?? string.Empty;
                 txtCorreo.Text = cliente.Correo ?? string.Empty;
+                txtDomicilio.Text = cliente.Domicilio ?? string.Empty;
+                txtLocalidad.Text = cliente.Localidad ?? string.Empty;
+                txtProvincia.Text = cliente.Provincia ?? string.Empty;
                 txtLicencia.Text = cliente.NroLicencia;
                 dpVencimiento.SelectedDate = cliente.VencimientoLicencia;
+                txtNacionalidad.Text = string.IsNullOrWhiteSpace(cliente.Nacionalidad) ? "Argentina" : cliente.Nacionalidad;
+                txtContactoEmergenciaNombre.Text = cliente.ContactoEmergenciaNombre ?? string.Empty;
+                txtContactoEmergenciaTelefono.Text = cliente.ContactoEmergenciaTelefono ?? string.Empty;
 
                 MostrarTarjetaValidacion(cliente);
 
@@ -99,8 +126,26 @@ namespace DriveNow.Views
                 string.IsNullOrWhiteSpace(txtLicencia.Text) ||
                 !dpVencimiento.SelectedDate.HasValue)
             {
-                MessageBox.Show("Por favor, complete todos los campos obligatorios.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, complete todos los campos obligatorios (Nombre, Apellido, DNI, Licencia y Vencimiento).", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
+            }
+
+            // Regla de Negocio: Verificación de edad mínima recomendada para alquiler (21 años)
+            if (dpFechaNacimiento.SelectedDate.HasValue)
+            {
+                var fechaNac = dpFechaNacimiento.SelectedDate.Value;
+                int edad = DateTime.Today.Year - fechaNac.Year - (DateTime.Today.DayOfYear < fechaNac.DayOfYear ? 1 : 0);
+                if (edad < 21)
+                {
+                    var resp = MessageBox.Show(
+                        $"El conductor tiene {edad} años (menor al requisito mínimo de 21 años de la aseguradora).\n\n" +
+                        "¿Desea registrarlo de todas formas bajo autorización especial de la gerencia?",
+                        "Alerta de Edad Mínima",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (resp != MessageBoxResult.Yes) return;
+                }
             }
 
             string dni = txtDni.Text.Trim().ToUpper();
@@ -139,10 +184,17 @@ namespace DriveNow.Views
                         Nombre = txtNombre.Text.Trim(),
                         Apellido = txtApellido.Text.Trim(),
                         Dni = dni,
+                        FechaNacimiento = dpFechaNacimiento.SelectedDate,
                         Telefono = string.IsNullOrWhiteSpace(txtTelefono.Text) ? null : txtTelefono.Text.Trim(),
                         Correo = string.IsNullOrWhiteSpace(txtCorreo.Text) ? null : txtCorreo.Text.Trim(),
+                        Domicilio = string.IsNullOrWhiteSpace(txtDomicilio.Text) ? null : txtDomicilio.Text.Trim(),
+                        Localidad = string.IsNullOrWhiteSpace(txtLocalidad.Text) ? null : txtLocalidad.Text.Trim(),
+                        Provincia = string.IsNullOrWhiteSpace(txtProvincia.Text) ? null : txtProvincia.Text.Trim(),
                         NroLicencia = licencia,
                         VencimientoLicencia = dpVencimiento.SelectedDate.Value,
+                        Nacionalidad = string.IsNullOrWhiteSpace(txtNacionalidad.Text) ? "Argentina" : txtNacionalidad.Text.Trim(),
+                        ContactoEmergenciaNombre = string.IsNullOrWhiteSpace(txtContactoEmergenciaNombre.Text) ? null : txtContactoEmergenciaNombre.Text.Trim(),
+                        ContactoEmergenciaTelefono = string.IsNullOrWhiteSpace(txtContactoEmergenciaTelefono.Text) ? null : txtContactoEmergenciaTelefono.Text.Trim(),
                         Activo = true
                     };
 
@@ -161,10 +213,17 @@ namespace DriveNow.Views
                         clienteDb.Nombre = txtNombre.Text.Trim();
                         clienteDb.Apellido = txtApellido.Text.Trim();
                         clienteDb.Dni = dni;
+                        clienteDb.FechaNacimiento = dpFechaNacimiento.SelectedDate;
                         clienteDb.Telefono = string.IsNullOrWhiteSpace(txtTelefono.Text) ? null : txtTelefono.Text.Trim();
                         clienteDb.Correo = string.IsNullOrWhiteSpace(txtCorreo.Text) ? null : txtCorreo.Text.Trim();
+                        clienteDb.Domicilio = string.IsNullOrWhiteSpace(txtDomicilio.Text) ? null : txtDomicilio.Text.Trim();
+                        clienteDb.Localidad = string.IsNullOrWhiteSpace(txtLocalidad.Text) ? null : txtLocalidad.Text.Trim();
+                        clienteDb.Provincia = string.IsNullOrWhiteSpace(txtProvincia.Text) ? null : txtProvincia.Text.Trim();
                         clienteDb.NroLicencia = licencia;
                         clienteDb.VencimientoLicencia = dpVencimiento.SelectedDate.Value;
+                        clienteDb.Nacionalidad = string.IsNullOrWhiteSpace(txtNacionalidad.Text) ? "Argentina" : txtNacionalidad.Text.Trim();
+                        clienteDb.ContactoEmergenciaNombre = string.IsNullOrWhiteSpace(txtContactoEmergenciaNombre.Text) ? null : txtContactoEmergenciaNombre.Text.Trim();
+                        clienteDb.ContactoEmergenciaTelefono = string.IsNullOrWhiteSpace(txtContactoEmergenciaTelefono.Text) ? null : txtContactoEmergenciaTelefono.Text.Trim();
 
                         await context.SaveChangesAsync();
 
@@ -200,7 +259,6 @@ namespace DriveNow.Views
                     {
                         clienteADesactivar.Activo = false;
                         await context.SaveChangesAsync();
-                        _listaClientes.Remove(cliente);
 
                         if (_clienteEnEdicion?.IdCliente == cliente.IdCliente)
                         {
@@ -208,11 +266,44 @@ namespace DriveNow.Views
                         }
 
                         MessageBox.Show("Cliente dado de baja exitosamente del padrón activo.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await CargarClientesDesdeBdAsync();
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error al dar de baja al cliente: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async void btnReactivarCliente_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is Cliente cliente)
+            {
+                var confirmacion = MessageBox.Show(
+                    $"¿Desea reactivar a {cliente.NombreCompleto} e incorporarlo nuevamente al padrón activo?",
+                    "Confirmar Reactivación",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (confirmacion != MessageBoxResult.Yes) return;
+
+                try
+                {
+                    using var context = new DriveNowDbContext();
+                    var clienteDb = await context.Clientes.FindAsync(cliente.IdCliente);
+                    if (clienteDb != null)
+                    {
+                        clienteDb.Activo = true;
+                        await context.SaveChangesAsync();
+
+                        MessageBox.Show($"El cliente {clienteDb.NombreCompleto} ha sido reactivado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await CargarClientesDesdeBdAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al reactivar cliente: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -255,7 +346,14 @@ namespace DriveNow.Views
         {
             lblNombreValidado.Text = cliente.NombreCompleto;
             lblDniValidado.Text = $"DNI: {cliente.Dni}";
-            lblVencimientoTexto.Text = $"Vence: {cliente.VencimientoLicencia:dd/MM/yyyy}";
+            lblEdadValidada.Text = cliente.Edad.HasValue 
+                ? $"Edad: {cliente.Edad.Value} años {(cliente.EsMayorDeEdad ? "(Habilitado)" : "(Requiere autorización)")}"
+                : "Edad: No especificada";
+            lblDomicilioValidado.Text = $"Domicilio: {cliente.DomicilioCompleto}";
+            lblContactoEmergenciaValidado.Text = !string.IsNullOrWhiteSpace(cliente.ContactoEmergenciaNombre)
+                ? $"Emergencia: {cliente.ContactoEmergenciaNombre} ({cliente.ContactoEmergenciaTelefono ?? "-"})"
+                : "Emergencia: No informado";
+            lblVencimientoTexto.Text = $"Estado Licencia (Vence: {cliente.VencimientoLicencia:dd/MM/yyyy})";
 
             if (!cliente.LicenciaVigente)
             {
@@ -287,10 +385,17 @@ namespace DriveNow.Views
             txtNombre.Clear();
             txtApellido.Clear();
             txtDni.Clear();
+            dpFechaNacimiento.SelectedDate = null;
             txtTelefono.Clear();
             txtCorreo.Clear();
+            txtDomicilio.Clear();
+            txtLocalidad.Clear();
+            txtProvincia.Clear();
             txtLicencia.Clear();
             dpVencimiento.SelectedDate = DateTime.Today.AddYears(2);
+            txtNacionalidad.Text = "Argentina";
+            txtContactoEmergenciaNombre.Clear();
+            txtContactoEmergenciaTelefono.Clear();
 
             lblTituloFormularioCliente.Text = "👤 Registro de cliente";
             btnGuardarCliente.Content = "Guardar Registro";
@@ -313,7 +418,10 @@ namespace DriveNow.Views
                     c.Dni.ToLower().Contains(filtro) ||
                     c.NroLicencia.ToLower().Contains(filtro) ||
                     (c.Telefono != null && c.Telefono.ToLower().Contains(filtro)) ||
-                    (c.Correo != null && c.Correo.ToLower().Contains(filtro))
+                    (c.Correo != null && c.Correo.ToLower().Contains(filtro)) ||
+                    (c.Domicilio != null && c.Domicilio.ToLower().Contains(filtro)) ||
+                    (c.Localidad != null && c.Localidad.ToLower().Contains(filtro)) ||
+                    (c.Provincia != null && c.Provincia.ToLower().Contains(filtro))
                 ).ToList();
             }
         }

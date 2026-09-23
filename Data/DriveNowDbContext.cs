@@ -7,6 +7,10 @@ namespace DriveNow.Data
 {
     public class DriveNowDbContext : DbContext
     {
+        public DriveNowDbContext() { }
+
+        public DriveNowDbContext(DbContextOptions<DriveNowDbContext> options) : base(options) { }
+
         public DbSet<Rol> Roles { get; set; }
         public DbSet<Estado> Estados { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
@@ -32,7 +36,7 @@ namespace DriveNow.Data
                 // Respaldo de seguridad en caso de que no se encuentre el archivo de configuración
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
-                    connectionString = "Server=100.125.117.70,1433;Database=DriveNow_DB;User Id=sa;Password=Tobyy91218@;TrustServerCertificate=True;";
+                    connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=DriveNow_DB;Trusted_Connection=True;TrustServerCertificate=True;";
                 }
 
                 optionsBuilder.UseSqlServer(connectionString);

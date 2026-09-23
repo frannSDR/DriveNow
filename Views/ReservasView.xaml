@@ -28,17 +28,85 @@
                 <StackPanel>
                     <TextBlock Text="📝 Crear nueva reserva" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
 
-                    <TextBlock Text="Cliente (DNI)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                    <Grid Margin="0,0,0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox x:Name="txtDniCliente" Grid.Column="0" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
-                        <Button x:Name="btnBuscarClienteReserva" Grid.Column="1" Content="Validar" Width="75" Height="35" 
-                                Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand" Click="btnBuscarClienteReserva_Click"/>
+                    <TextBlock Text="Conductor / Cliente Titular" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+
+                    <!-- 1. MODO BÚSQUEDA PREDICTIVA -->
+                    <Grid x:Name="pnlBuscadorCliente" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0">
+                                <TextBox x:Name="txtBuscarClienteReserva" Height="35" Background="#0F172A" Foreground="White" 
+                                         BorderBrush="#334155" Padding="8,6" TextChanged="txtBuscarClienteReserva_TextChanged"/>
+                                <TextBlock Text="🔍 Buscar por apellido, nombre o DNI..." Foreground="#64748B" IsHitTestVisible="False"
+                                           Margin="10,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock.Visibility>
+                                        <Binding Path="Text.IsEmpty" ElementName="txtBuscarClienteReserva">
+                                            <Binding.Converter>
+                                                <BooleanToVisibilityConverter/>
+                                            </Binding.Converter>
+                                        </Binding>
+                                    </TextBlock.Visibility>
+                                </TextBlock>
+                            </Grid>
+
+                            <Button x:Name="btnVerPadronClientes" Grid.Column="1" Content="👥 Padrón" Width="85" Height="35" 
+                                    Background="#334155" Foreground="White" BorderThickness="0" Margin="8,0,0,0" 
+                                    Cursor="Hand" ToolTip="Ver listado de clientes activos" Click="btnVerPadronClientes_Click"/>
+                        </Grid>
+
+                        <!-- Popup de sugerencias predictivas -->
+                        <Popup x:Name="popupSugerenciasClientes" PlacementTarget="{Binding ElementName=txtBuscarClienteReserva}" 
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Slide">
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" 
+                                    Padding="4" MaxHeight="220" Width="360">
+                                <ListBox x:Name="lstSugerenciasClientes" Background="Transparent" BorderThickness="0" 
+                                         SelectionMode="Single" SelectionChanged="lstSugerenciasClientes_SelectionChanged"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="6,5" Background="Transparent" CornerRadius="4">
+                                                <DockPanel LastChildFill="True">
+                                                    <Border DockPanel.Dock="Right" Background="#065F46" CornerRadius="3" Padding="5,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding EstadoLicencia}" FontWeight="Bold" FontSize="9" Foreground="#34D399"/>
+                                                    </Border>
+                                                    <StackPanel Margin="0,0,8,0">
+                                                        <TextBlock Text="{Binding NombreCompleto}" FontWeight="Bold" Foreground="White" FontSize="12.5"/>
+                                                        <TextBlock FontSize="11" Foreground="#94A3B8" Margin="0,2,0,0">
+                                                            <Run Text="DNI: "/><Run Text="{Binding Dni, Mode=OneWay}"/><Run Text=" • "/><Run Text="Licencia: "/><Run Text="{Binding NroLicencia, Mode=OneWay}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
                     </Grid>
-                    <TextBlock x:Name="lblClienteSeleccionado" Text="Cliente: No seleccionado" FontSize="12" Foreground="#38BDF8" Margin="0,0,0,10"/>
+
+                    <!-- 2. MODO CLIENTE SELECCIONADO (TARJETA) -->
+                    <Border x:Name="pnlClienteSeleccionado" Background="#0F172A" BorderBrush="#2563EB" BorderThickness="1" 
+                            CornerRadius="6" Padding="12,10" Margin="0,0,0,10" Visibility="Collapsed">
+                        <DockPanel LastChildFill="True">
+                            <Button x:Name="btnCambiarCliente" Content="✕ Cambiar" Width="85" Height="28" 
+                                    Background="#334155" Foreground="#CBD5E1" FontWeight="SemiBold" FontSize="11"
+                                    BorderThickness="0" Cursor="Hand" DockPanel.Dock="Right" Click="btnCambiarCliente_Click"/>
+
+                            <StackPanel Margin="0,0,8,0">
+                                <DockPanel LastChildFill="False">
+                                    <TextBlock x:Name="lblClienteSeleccionadoNombre" Text="👤 Nombre Cliente" FontWeight="Bold" Foreground="White" FontSize="13" DockPanel.Dock="Left"/>
+                                    <Border Background="#065F46" CornerRadius="3" Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center" DockPanel.Dock="Left">
+                                        <TextBlock Text="VALIDADO" FontSize="9" FontWeight="Bold" Foreground="#34D399"/>
+                                    </Border>
+                                </DockPanel>
+                                <TextBlock x:Name="lblClienteSeleccionadoInfo" Text="DNI: 12345678 | Licencia: VIGENTE" FontSize="11" Foreground="#38BDF8" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
 
                     <UniformGrid Columns="2" Margin="0,0,0,10">
                         <StackPanel Margin="0,0,5,0">
@@ -54,13 +122,13 @@
                     <UniformGrid Columns="2" Margin="0,0,0,12">
                         <StackPanel Margin="0,0,5,0">
                             <TextBlock Text="Filtrar Categoría" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <ComboBox x:Name="cmbCategoriaReserva" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6"
+                            <ComboBox x:Name="cmbCategoriaReserva" Height="35"
                                       DisplayMemberPath="Nombre" SelectedValuePath="IdCategoria"
                                       SelectionChanged="cmbCategoriaReserva_SelectionChanged"/>
                         </StackPanel>
                         <StackPanel Margin="5,0,0,0">
                             <TextBlock Text="Vehículo Disponible" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <ComboBox x:Name="cmbVehiculosDisponibles" Height="35" Background="#0F172A" Foreground="Black" Padding="8,6"
+                            <ComboBox x:Name="cmbVehiculosDisponibles" Height="35"
                                       DisplayMemberPath="TextoMostrar" SelectedValuePath="IdVehiculo"
                                       SelectionChanged="cmbVehiculosDisponibles_SelectionChanged"/>
                         </StackPanel>

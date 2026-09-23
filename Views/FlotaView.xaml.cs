@@ -1,13 +1,15 @@
-﻿using DriveNow.Data;
+using DriveNow.Data;
 using DriveNow.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace DriveNow.Views
@@ -17,6 +19,8 @@ namespace DriveNow.Views
         private ObservableCollection<Vehiculo> _listaVehiculos = new ObservableCollection<Vehiculo>();
         private Vehiculo? _vehiculoEnEdicion = null;
         private bool _isFormatting = false;
+        private string _filtroEstado = "Todos";
+        private bool _ignorarCambioFiltros = false;
 
         public FlotaView()
         {
@@ -59,13 +63,35 @@ namespace DriveNow.Views
                 cmbCategoria.ItemsSource = categorias;
                 if (categorias.Count > 0) cmbCategoria.SelectedIndex = 0;
 
-                var estadosValidos = new[] { "Disponible", "Alquilado", "En Taller", "Mantenimiento" };
+                // Cargar combo de filtro de categorías
+                var categoriasFiltro = new List<Categoria>
+                {
+                    new Categoria { IdCategoria = 0, Nombre = "Todas las categorías" }
+                };
+                categoriasFiltro.AddRange(categorias);
+                cmbFiltroCategoria.ItemsSource = categoriasFiltro;
+                cmbFiltroCategoria.SelectedIndex = 0;
+
+                // Estados manuales para el formulario: Solo se permite poner Disponible o En Taller
+                var estadosFormulario = new[] { "Disponible", "En Taller" };
                 var estados = await context.Estados
-                    .Where(e => estadosValidos.Contains(e.Nombre))
+                    .Where(e => estadosFormulario.Contains(e.Nombre))
+                    .OrderBy(e => e.IdEstado)
                     .ToListAsync();
 
                 cmbEstado.ItemsSource = estados;
                 if (estados.Count > 0) cmbEstado.SelectedIndex = 0;
+
+                // Cargar combo de filtro de estados para la grilla
+                var estadosFiltro = new List<string>
+                {
+                    "Todos los estados",
+                    "Disponible",
+                    "Alquilado",
+                    "En Taller"
+                };
+                cmbFiltroEstado.ItemsSource = estadosFiltro;
+                cmbFiltroEstado.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -87,8 +113,8 @@ namespace DriveNow.Views
                     .ToListAsync();
 
                 _listaVehiculos = new ObservableCollection<Vehiculo>(vehiculos);
-                dgvFlota.ItemsSource = _listaVehiculos;
                 ActualizarMetricas();
+                AplicarFiltrosFlota();
             }
             catch (Exception ex)
             {
@@ -98,6 +124,7 @@ namespace DriveNow.Views
 
         private void ActualizarMetricas()
         {
+            lblTotalFlota.Text = _listaVehiculos.Count.ToString();
             lblDisponibles.Text = _listaVehiculos.Count(v => v.Estado?.Nombre == "Disponible").ToString();
             lblAlquilados.Text = _listaVehiculos.Count(v => v.Estado?.Nombre == "Alquilado").ToString();
             lblReservados.Text = _listaVehiculos.Count(v => v.Estado?.Nombre == "Reservado").ToString();
@@ -280,17 +307,153 @@ namespace DriveNow.Views
 
         private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string filtro = txtBuscar.Text.Trim().ToLower();
-            if (string.IsNullOrEmpty(filtro))
+            AplicarFiltrosFlota();
+        }
+
+        private void FiltroCombinado_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_ignorarCambioFiltros || !IsLoaded) return;
+
+            if (sender == cmbFiltroEstado && cmbFiltroEstado.SelectedItem is string estadoSeleccionado)
             {
-                dgvFlota.ItemsSource = _listaVehiculos;
+                _filtroEstado = estadoSeleccionado == "Todos los estados" ? "Todos" : estadoSeleccionado;
             }
-            else
+
+            AplicarFiltrosFlota();
+        }
+
+        private void CardFiltro_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.Tag is string estadoTag)
             {
-                dgvFlota.ItemsSource = _listaVehiculos.Where(v =>
-                    v.Patente.ToLower().Contains(filtro) ||
-                    v.Marca.ToLower().Contains(filtro) ||
-                    v.Modelo.ToLower().Contains(filtro)).ToList();
+                if (_filtroEstado == estadoTag && estadoTag != "Todos")
+                {
+                    _filtroEstado = "Todos";
+                }
+                else
+                {
+                    _filtroEstado = estadoTag;
+                }
+
+                _ignorarCambioFiltros = true;
+                if (_filtroEstado == "Todos")
+                {
+                    cmbFiltroEstado.SelectedIndex = 0;
+                }
+                else if (_filtroEstado == "Mantenimiento" || _filtroEstado == "En Taller")
+                {
+                    cmbFiltroEstado.SelectedItem = "En Taller";
+                }
+                else
+                {
+                    cmbFiltroEstado.SelectedItem = _filtroEstado;
+                }
+                _ignorarCambioFiltros = false;
+
+                AplicarFiltrosFlota();
+            }
+        }
+
+        private void btnLimpiarFiltrosFlota_Click(object sender, RoutedEventArgs e)
+        {
+            _ignorarCambioFiltros = true;
+            txtBuscar.Clear();
+            if (cmbFiltroCategoria.Items.Count > 0) cmbFiltroCategoria.SelectedIndex = 0;
+            if (cmbFiltroEstado.Items.Count > 0) cmbFiltroEstado.SelectedIndex = 0;
+            _filtroEstado = "Todos";
+            _ignorarCambioFiltros = false;
+
+            AplicarFiltrosFlota();
+        }
+
+        private void AplicarFiltrosFlota()
+        {
+            if (_ignorarCambioFiltros) return;
+
+            IEnumerable<Vehiculo> filtrados = _listaVehiculos;
+
+            // 1. Filtro por Estado
+            if (!string.IsNullOrEmpty(_filtroEstado) && _filtroEstado != "Todos")
+            {
+                if (_filtroEstado == "Mantenimiento" || _filtroEstado == "En Taller")
+                {
+                    filtrados = filtrados.Where(v => v.Estado?.Nombre == "En Taller" || v.Estado?.Nombre == "Mantenimiento");
+                }
+                else
+                {
+                    filtrados = filtrados.Where(v => v.Estado?.Nombre == _filtroEstado);
+                }
+            }
+
+            // 2. Filtro por Categoría
+            if (cmbFiltroCategoria != null && cmbFiltroCategoria.SelectedValue is int idCat && idCat > 0)
+            {
+                filtrados = filtrados.Where(v => v.IdCategoria == idCat);
+            }
+
+            // 3. Filtro por Texto (Patente, Marca, Modelo)
+            string texto = txtBuscar?.Text.Trim().ToLower() ?? string.Empty;
+            if (!string.IsNullOrEmpty(texto))
+            {
+                filtrados = filtrados.Where(v =>
+                    v.Patente.ToLower().Contains(texto) ||
+                    v.Marca.ToLower().Contains(texto) ||
+                    v.Modelo.ToLower().Contains(texto));
+            }
+
+            var lista = filtrados.ToList();
+            dgvFlota.ItemsSource = lista;
+            if (lblContadorFiltrados != null)
+            {
+                lblContadorFiltrados.Text = $"Mostrando: {lista.Count} de {_listaVehiculos.Count} vehículos";
+            }
+            ResaltarTarjetaSeleccionada(_filtroEstado);
+        }
+
+        private void ResaltarTarjetaSeleccionada(string estado)
+        {
+            if (cardFiltroTodos == null) return;
+
+            var brushTransparente = Brushes.Transparent;
+            var brushBgNormal = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E293B"));
+
+            cardFiltroTodos.BorderBrush = brushTransparente;
+            cardFiltroTodos.Background = brushBgNormal;
+
+            cardFiltroDisponibles.BorderBrush = brushTransparente;
+            cardFiltroDisponibles.Background = brushBgNormal;
+
+            cardFiltroAlquilados.BorderBrush = brushTransparente;
+            cardFiltroAlquilados.Background = brushBgNormal;
+
+            cardFiltroReservados.BorderBrush = brushTransparente;
+            cardFiltroReservados.Background = brushBgNormal;
+
+            cardFiltroMantenimiento.BorderBrush = brushTransparente;
+            cardFiltroMantenimiento.Background = brushBgNormal;
+
+            switch (estado)
+            {
+                case "Disponible":
+                    cardFiltroDisponibles.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4ADE80"));
+                    cardFiltroDisponibles.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A2E35"));
+                    break;
+                case "Alquilado":
+                    cardFiltroAlquilados.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FBBF24"));
+                    cardFiltroAlquilados.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#332E22"));
+                    break;
+                case "Reservado":
+                    cardFiltroReservados.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#60A5FA"));
+                    cardFiltroReservados.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E2E4A"));
+                    break;
+                case "Mantenimiento":
+                    cardFiltroMantenimiento.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F87171"));
+                    cardFiltroMantenimiento.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#352227"));
+                    break;
+                default: // "Todos"
+                    cardFiltroTodos.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#38BDF8"));
+                    cardFiltroTodos.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1B2E42"));
+                    break;
             }
         }
 

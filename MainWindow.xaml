@@ -1,9 +1,10 @@
-﻿<Window x:Class="DriveNow.MainWindow"
+<Window x:Class="DriveNow.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Drive Now - Panel de Administración" 
         Height="900" Width="1600"
         WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
         Background="#0F172A">
 
     <Window.Resources>

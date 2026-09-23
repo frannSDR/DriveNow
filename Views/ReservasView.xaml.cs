@@ -33,6 +33,7 @@ namespace DriveNow.Views
         private ObservableCollection<Reserva> _listaReservas = new ObservableCollection<Reserva>();
         private List<Vehiculo> _catalogoVehiculos = new List<Vehiculo>();
         private List<Categoria> _catalogoCategorias = new List<Categoria>();
+        private List<Cliente> _catalogoClientes = new List<Cliente>();
         private Cliente? _clienteActual = null;
 
         public ReservasView()
@@ -89,6 +90,12 @@ namespace DriveNow.Views
                     .Where(v => v.Activo)
                     .ToListAsync();
 
+                _catalogoClientes = await context.Clientes
+                    .Where(c => c.Activo)
+                    .OrderBy(c => c.Apellido)
+                    .ThenBy(c => c.Nombre)
+                    .ToListAsync();
+
                 var reservas = await context.Reservas
                     .Include(r => r.Cliente)
                     .Include(r => r.Empleado) // <-- INCLUYE AL OPERADOR QUE CREÓ LA RESERVA
@@ -110,38 +117,88 @@ namespace DriveNow.Views
             }
         }
 
-        private async void btnBuscarClienteReserva_Click(object sender, RoutedEventArgs e)
+        private void txtBuscarClienteReserva_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string busqueda = txtDniCliente.Text.Trim();
-            if (string.IsNullOrWhiteSpace(busqueda)) return;
-
-            try
+            string filtro = txtBuscarClienteReserva.Text.Trim().ToLower();
+            if (string.IsNullOrEmpty(filtro))
             {
-                using var context = new DriveNowDbContext();
-                _clienteActual = await context.Clientes.FirstOrDefaultAsync(c =>
-                    (c.Dni == busqueda || (c.Nombre + " " + c.Apellido).Contains(busqueda)) && c.Activo);
+                popupSugerenciasClientes.IsOpen = false;
+                return;
+            }
 
-                if (_clienteActual != null)
-                {
-                    if (!_clienteActual.LicenciaVigente)
-                    {
-                        MessageBox.Show("El cliente tiene la licencia de conducir vencida. No puede realizar reservas.", "Bloqueo Operativo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        _clienteActual = null;
-                        lblClienteSeleccionado.Text = "Cliente: Bloqueado (Licencia Vencida)";
-                        return;
-                    }
-                    lblClienteSeleccionado.Text = $"Cliente: {_clienteActual.NombreCompleto} (DNI: {_clienteActual.Dni})";
-                }
-                else
-                {
-                    MessageBox.Show("Cliente no encontrado en el padrón activo.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
-                    lblClienteSeleccionado.Text = "Cliente: No encontrado";
-                }
-            }
-            catch (Exception ex)
+            var coincidencias = _catalogoClientes.Where(c =>
+                c.Dni.ToLower().Contains(filtro) ||
+                c.Nombre.ToLower().Contains(filtro) ||
+                c.Apellido.ToLower().Contains(filtro) ||
+                c.NombreCompleto.ToLower().Contains(filtro)).Take(8).ToList();
+
+            if (coincidencias.Count > 0)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                lstSugerenciasClientes.ItemsSource = coincidencias;
+                popupSugerenciasClientes.IsOpen = true;
             }
+            else
+            {
+                popupSugerenciasClientes.IsOpen = false;
+            }
+        }
+
+        private void btnVerPadronClientes_Click(object sender, RoutedEventArgs e)
+        {
+            if (_catalogoClientes.Count == 0)
+            {
+                MessageBox.Show("No hay clientes activos registrados en el padrón.", "Padrón Vacío", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            lstSugerenciasClientes.ItemsSource = _catalogoClientes.Take(25).ToList();
+            popupSugerenciasClientes.IsOpen = true;
+        }
+
+        private void lstSugerenciasClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lstSugerenciasClientes.SelectedItem is Cliente cliente)
+            {
+                popupSugerenciasClientes.IsOpen = false;
+                lstSugerenciasClientes.SelectedItem = null;
+
+                if (!cliente.LicenciaVigente)
+                {
+                    MessageBox.Show(
+                        $"El cliente {cliente.NombreCompleto} posee la licencia de conducir VENCIDA ({cliente.VencimientoLicencia:dd/MM/yyyy}).\n\n" +
+                        "Las políticas de la rentadora y aseguradora prohíben reservar unidades a conductores inhabilitados.",
+                        "Bloqueo Operativo",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                SeleccionarCliente(cliente);
+            }
+        }
+
+        private void SeleccionarCliente(Cliente cliente)
+        {
+            _clienteActual = cliente;
+            lblClienteSeleccionadoNombre.Text = $"👤 {cliente.NombreCompleto}";
+            lblClienteSeleccionadoInfo.Text = $"DNI: {cliente.Dni}  •  Tel: {cliente.Telefono ?? "-"}  •  Licencia: {cliente.NroLicencia}";
+
+            pnlBuscadorCliente.Visibility = Visibility.Collapsed;
+            pnlClienteSeleccionado.Visibility = Visibility.Visible;
+        }
+
+        private void btnCambiarCliente_Click(object sender, RoutedEventArgs e)
+        {
+            ResetearSeleccionCliente();
+        }
+
+        private void ResetearSeleccionCliente()
+        {
+            _clienteActual = null;
+            txtBuscarClienteReserva.Clear();
+            popupSugerenciasClientes.IsOpen = false;
+            pnlClienteSeleccionado.Visibility = Visibility.Collapsed;
+            pnlBuscadorCliente.Visibility = Visibility.Visible;
         }
 
         private void dpFechas_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
@@ -403,9 +460,7 @@ namespace DriveNow.Views
 
         private void LimpiarFormulario()
         {
-            _clienteActual = null;
-            txtDniCliente.Clear();
-            lblClienteSeleccionado.Text = "Cliente: No seleccionado";
+            ResetearSeleccionCliente();
             dpFechaInicio.SelectedDate = DateTime.Today;
             dpFechaFin.SelectedDate = DateTime.Today.AddDays(3);
             CalcularPresupuesto();

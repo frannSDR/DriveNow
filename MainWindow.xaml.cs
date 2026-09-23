@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using DriveNow.Models;
+using DriveNow.Security;
 using DriveNow.Views;
 
 namespace DriveNow
@@ -18,7 +19,7 @@ namespace DriveNow
 
         private void ConfigurarPermisosSegunRol()
         {
-            var empleado = LoginView.EmpleadoActual;
+            var empleado = UserSession.Current.EmpleadoActual;
             if (empleado == null) return;
 
             var rol = (RolUsuario)empleado.IdRol;
@@ -44,14 +45,14 @@ namespace DriveNow
                     btnNavAlquileres.Visibility = Visibility.Visible;
                     btnNavFlota.Visibility = Visibility.Visible;
                     btnNavMisOperaciones.Visibility = Visibility.Visible;
-                    btnNavReportes.Visibility = Visibility.Collapsed;
-                    btnNavUsuarios.Visibility = Visibility.Collapsed;
+                    btnNavReportes.Visibility = Visibility.Visible;
+                    btnNavUsuarios.Visibility = Visibility.Visible;
                     btnNavCategorias.Visibility = Visibility.Visible;
                     break;
 
                 case RolUsuario.Dueno:
                     btnNavDashboard.Visibility = Visibility.Visible;
-                    btnNavFlota.Visibility = Visibility.Collapsed;
+                    btnNavFlota.Visibility = Visibility.Visible;
                     btnNavReportes.Visibility = Visibility.Visible;
                     btnNavClientes.Visibility = Visibility.Collapsed;
                     btnNavReservas.Visibility = Visibility.Collapsed;
@@ -154,7 +155,7 @@ namespace DriveNow
             var res = MessageBox.Show("¿Desea cerrar la sesión actual?", "Cerrar Sesión", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (res == MessageBoxResult.Yes)
             {
-                LoginView.CerrarSesion();
+                UserSession.Current.CerrarSesion();
                 LoginView login = new LoginView();
                 login.Show();
                 this.Close();
