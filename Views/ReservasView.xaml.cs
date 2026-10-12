@@ -58,12 +58,12 @@ namespace DriveNow.Views
 
             if (rol == RolUsuario.Dueno)
             {
-                pnlFormularioReserva.Visibility = Visibility.Collapsed;
+                btnNuevaReserva.Visibility = Visibility.Collapsed;
                 colAccionesReserva.Visibility = Visibility.Collapsed;
             }
             else
             {
-                pnlFormularioReserva.Visibility = Visibility.Visible;
+                btnNuevaReserva.Visibility = Visibility.Visible;
                 colAccionesReserva.Visibility = Visibility.Visible;
             }
         }
@@ -98,7 +98,7 @@ namespace DriveNow.Views
 
                 var reservas = await context.Reservas
                     .Include(r => r.Cliente)
-                    .Include(r => r.Empleado) // <-- INCLUYE AL OPERADOR QUE CREÓ LA RESERVA
+                    .Include(r => r.Empleado)
                     .Include(r => r.Vehiculo!)
                         .ThenInclude(v => v.Categoria)
                     .Include(r => r.Estado)
@@ -115,6 +115,18 @@ namespace DriveNow.Views
             {
                 MessageBox.Show($"Error al cargar reservas: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void btnNuevaReserva_Click(object sender, RoutedEventArgs e)
+        {
+            LimpiarFormulario();
+            modalOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void btnCerrarModal_Click(object sender, RoutedEventArgs e)
+        {
+            LimpiarFormulario();
+            modalOverlay.Visibility = Visibility.Collapsed;
         }
 
         private void txtBuscarClienteReserva_TextChanged(object sender, TextChangedEventArgs e)
@@ -350,7 +362,6 @@ namespace DriveNow.Views
             {
                 using var context = new DriveNowDbContext();
 
-                // 1. Validar en BD que el vehículo continúe activo y disponible (sin derivación a taller o mantenimiento)
                 var vehiculoDb = await context.Vehiculos
                     .Include(v => v.Estado)
                     .FirstOrDefaultAsync(v => v.IdVehiculo == idVehiculo);
@@ -362,7 +373,6 @@ namespace DriveNow.Views
                     return;
                 }
 
-                // 2. Validar en BD para prevenir reservas duplicadas (double-booking) en caso de concurrencia
                 bool existeSuperposicion = await context.Reservas.AnyAsync(r =>
                     r.IdVehiculo == idVehiculo &&
                     r.Estado != null && r.Estado.Nombre != "Cancelada" &&
@@ -396,13 +406,15 @@ namespace DriveNow.Views
                 nueva.Cliente = _clienteActual;
                 nueva.Vehiculo = _catalogoVehiculos.First(v => v.IdVehiculo == idVehiculo);
                 nueva.Estado = estadoConfirmada;
-                nueva.Empleado = LoginView.EmpleadoActual; // Muestra el nombre inmediatamente en la tabla
+                nueva.Empleado = LoginView.EmpleadoActual;
 
                 _listaReservas.Insert(0, nueva);
                 RefrescarVehiculosDisponibles();
                 ActualizarTableroDisponibilidad();
 
                 MessageBox.Show($"Reserva {nueva.CodigoReserva} registrada con éxito.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                modalOverlay.Visibility = Visibility.Collapsed;
                 LimpiarFormulario();
             }
             catch (Exception ex)
@@ -455,8 +467,6 @@ namespace DriveNow.Views
                 }
             }
         }
-
-        private void btnCancelarReserva_Click(object sender, RoutedEventArgs e) => LimpiarFormulario();
 
         private void LimpiarFormulario()
         {

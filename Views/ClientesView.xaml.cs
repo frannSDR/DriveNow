@@ -37,12 +37,12 @@ namespace DriveNow.Views
 
             if (rol == RolUsuario.Dueno)
             {
-                pnlFormularioCliente.Visibility = Visibility.Collapsed;
+                btnNuevoCliente.Visibility = Visibility.Collapsed;
                 colAccionesCliente.Visibility = Visibility.Collapsed;
             }
             else
             {
-                pnlFormularioCliente.Visibility = Visibility.Visible;
+                btnNuevoCliente.Visibility = Visibility.Visible;
                 colAccionesCliente.Visibility = Visibility.Visible;
             }
         }
@@ -81,6 +81,18 @@ namespace DriveNow.Views
             }
         }
 
+        private void btnNuevoCliente_Click(object sender, RoutedEventArgs e)
+        {
+            ResetearFormulario();
+            modalOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void btnCerrarModal_Click(object sender, RoutedEventArgs e)
+        {
+            ResetearFormulario();
+            modalOverlay.Visibility = Visibility.Collapsed;
+        }
+
         private async void cmbFiltroEstadoCliente_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!IsLoaded) return;
@@ -113,8 +125,8 @@ namespace DriveNow.Views
                 lblTituloFormularioCliente.Text = $"✏️ Editando: {cliente.NombreCompleto}";
                 btnGuardarCliente.Content = "Actualizar Cliente";
                 btnGuardarCliente.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
-                btnCancelarEdicion.Visibility = Visibility.Visible;
-                btnLimpiarCliente.Visibility = Visibility.Collapsed;
+
+                modalOverlay.Visibility = Visibility.Visible;
             }
         }
 
@@ -130,7 +142,6 @@ namespace DriveNow.Views
                 return;
             }
 
-            // Regla de Negocio: Verificación de edad mínima recomendada para alquiler (21 años)
             if (dpFechaNacimiento.SelectedDate.HasValue)
             {
                 var fechaNac = dpFechaNacimiento.SelectedDate.Value;
@@ -234,6 +245,7 @@ namespace DriveNow.Views
                     }
                 }
 
+                modalOverlay.Visibility = Visibility.Collapsed;
                 ResetearFormulario();
             }
             catch (Exception ex)
@@ -253,7 +265,6 @@ namespace DriveNow.Views
                 {
                     using var context = new DriveNowDbContext();
 
-                    // Borrado lógico: cambiamos bandera a inactivo
                     var clienteADesactivar = await context.Clientes.FindAsync(cliente.IdCliente);
                     if (clienteADesactivar != null)
                     {
@@ -263,6 +274,7 @@ namespace DriveNow.Views
                         if (_clienteEnEdicion?.IdCliente == cliente.IdCliente)
                         {
                             ResetearFormulario();
+                            modalOverlay.Visibility = Visibility.Collapsed;
                         }
 
                         MessageBox.Show("Cliente dado de baja exitosamente del padrón activo.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -346,7 +358,7 @@ namespace DriveNow.Views
         {
             lblNombreValidado.Text = cliente.NombreCompleto;
             lblDniValidado.Text = $"DNI: {cliente.Dni}";
-            lblEdadValidada.Text = cliente.Edad.HasValue 
+            lblEdadValidada.Text = cliente.Edad.HasValue
                 ? $"Edad: {cliente.Edad.Value} años {(cliente.EsMayorDeEdad ? "(Habilitado)" : "(Requiere autorización)")}"
                 : "Edad: No especificada";
             lblDomicilioValidado.Text = $"Domicilio: {cliente.DomicilioCompleto}";
@@ -361,7 +373,7 @@ namespace DriveNow.Views
                 lblBadgeTexto.Text = "VENCIDA";
                 lblBadgeTexto.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F87171"));
                 pbLicencia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
-                lblLicenciaEstadoMsg.Text = "⚠️ Licencia caducada. Operación bloqueada.";
+                lblLicenciaEstadoMsg.Text = "⚠️ Licencia caducada";
                 lblLicenciaEstadoMsg.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F87171"));
             }
             else
@@ -374,9 +386,6 @@ namespace DriveNow.Views
                 lblLicenciaEstadoMsg.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#34D399"));
             }
         }
-
-        private void btnCancelarEdicion_Click(object sender, RoutedEventArgs e) => ResetearFormulario();
-        private void btnLimpiar_Click(object sender, RoutedEventArgs e) => ResetearFormulario();
 
         private void ResetearFormulario()
         {
@@ -398,10 +407,8 @@ namespace DriveNow.Views
             txtContactoEmergenciaTelefono.Clear();
 
             lblTituloFormularioCliente.Text = "👤 Registro de cliente";
-            btnGuardarCliente.Content = "Guardar Registro";
+            btnGuardarCliente.Content = "Guardar Cliente";
             btnGuardarCliente.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2563EB"));
-            btnCancelarEdicion.Visibility = Visibility.Collapsed;
-            btnLimpiarCliente.Visibility = Visibility.Visible;
         }
 
         private void txtBuscarCliente_TextChanged(object sender, TextChangedEventArgs e)

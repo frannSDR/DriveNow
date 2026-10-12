@@ -1,9 +1,11 @@
 using DriveNow.Data;
 using DriveNow.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -21,6 +23,7 @@ namespace DriveNow.Views
         private bool _isFormatting = false;
         private string _filtroEstado = "Todos";
         private bool _ignorarCambioFiltros = false;
+        private string _rutaFotoSeleccionada = string.Empty;
 
         public FlotaView()
         {
@@ -43,13 +46,11 @@ namespace DriveNow.Views
 
             if (rol == RolUsuario.Dueno)
             {
-                pnlFormularioVehiculo.Visibility = Visibility.Collapsed;
-                colAccionesFlota.Visibility = Visibility.Collapsed;
+                btnNuevoVehiculo.Visibility = Visibility.Collapsed;
             }
             else
             {
-                pnlFormularioVehiculo.Visibility = Visibility.Visible;
-                colAccionesFlota.Visibility = Visibility.Visible;
+                btnNuevoVehiculo.Visibility = Visibility.Visible;
             }
         }
 
@@ -63,7 +64,6 @@ namespace DriveNow.Views
                 cmbCategoria.ItemsSource = categorias;
                 if (categorias.Count > 0) cmbCategoria.SelectedIndex = 0;
 
-                // Cargar combo de filtro de categorías
                 var categoriasFiltro = new List<Categoria>
                 {
                     new Categoria { IdCategoria = 0, Nombre = "Todas las categorías" }
@@ -72,7 +72,6 @@ namespace DriveNow.Views
                 cmbFiltroCategoria.ItemsSource = categoriasFiltro;
                 cmbFiltroCategoria.SelectedIndex = 0;
 
-                // Estados manuales para el formulario: Solo se permite poner Disponible o En Taller
                 var estadosFormulario = new[] { "Disponible", "En Taller" };
                 var estados = await context.Estados
                     .Where(e => estadosFormulario.Contains(e.Nombre))
@@ -82,7 +81,6 @@ namespace DriveNow.Views
                 cmbEstado.ItemsSource = estados;
                 if (estados.Count > 0) cmbEstado.SelectedIndex = 0;
 
-                // Cargar combo de filtro de estados para la grilla
                 var estadosFiltro = new List<string>
                 {
                     "Todos los estados",
@@ -104,7 +102,6 @@ namespace DriveNow.Views
             try
             {
                 using var context = new DriveNowDbContext();
-                // Filtramos únicamente los vehículos con borrado lógico activo
                 var vehiculos = await context.Vehiculos
                     .Include(v => v.Categoria)
                     .Include(v => v.Estado)
@@ -129,6 +126,98 @@ namespace DriveNow.Views
             lblAlquilados.Text = _listaVehiculos.Count(v => v.Estado?.Nombre == "Alquilado").ToString();
             lblReservados.Text = _listaVehiculos.Count(v => v.Estado?.Nombre == "Reservado").ToString();
             lblMantenimiento.Text = _listaVehiculos.Count(v => v.Estado?.Nombre == "En Taller" || v.Estado?.Nombre == "Mantenimiento").ToString();
+        }
+
+        private void btnNuevoVehiculo_Click(object sender, RoutedEventArgs e)
+        {
+            ResetearFormularioFlota();
+            modalOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void btnCerrarModal_Click(object sender, RoutedEventArgs e)
+        {
+            ResetearFormularioFlota();
+            modalOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void btnAdjuntarFotoVehiculo_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog
+            {
+                Filter = "Imágenes (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                _rutaFotoSeleccionada = dlg.FileName;
+                lblFotoStatus.Text = Path.GetFileName(_rutaFotoSeleccionada);
+            }
+        }
+
+        private string CopiarImagenACarpetaLocal(string rutaOrigen, string patente)
+        {
+            if (string.IsNullOrEmpty(rutaOrigen) || !File.Exists(rutaOrigen))
+                return string.Empty;
+
+            try
+            {
+                string carpetaDestino = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Vehiculos");
+                if (!Directory.Exists(carpetaDestino))
+                {
+                    Directory.CreateDirectory(carpetaDestino);
+                }
+
+                string ext = Path.GetExtension(rutaOrigen);
+                string nombreArchivo = $"{patente.Replace(" ", "")}_{DateTime.Now.Ticks}{ext}";
+                string rutaFinal = Path.Combine(carpetaDestino, nombreArchivo);
+
+                File.Copy(rutaOrigen, rutaFinal, true);
+                return rutaFinal;
+            }
+            catch
+            {
+                return rutaOrigen;
+            }
+        }
+
+        private string ObtenerFotoPorDefectoSegunModeloYCategoria(string modelo, string categoria)
+        {
+            try
+            {
+                string carpetaModelos = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Modelos");
+
+                if (!Directory.Exists(carpetaModelos))
+                {
+                    Directory.CreateDirectory(carpetaModelos);
+                    return string.Empty;
+                }
+
+                string modeloLimpio = modelo.ToLower().Trim();
+                string categoriaLimpia = categoria.ToLower().Trim();
+
+                var archivos = Directory.GetFiles(carpetaModelos, "*.*")
+                    .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                                f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                                f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase));
+
+                if (!string.IsNullOrEmpty(modeloLimpio))
+                {
+                    var fotoModelo = archivos.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).ToLower().Contains(modeloLimpio));
+                    if (!string.IsNullOrEmpty(fotoModelo)) return fotoModelo;
+                }
+
+                if (!string.IsNullOrEmpty(categoriaLimpia))
+                {
+                    var fotoCategoria = archivos.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).ToLower().Contains(categoriaLimpia));
+                    if (!string.IsNullOrEmpty(fotoCategoria)) return fotoCategoria;
+                }
+            }
+            catch
+            {
+                // Ignorar error si no encuentra la carpeta
+            }
+
+            return string.Empty;
         }
 
         private async void btnGuardarVehiculo_Click(object sender, RoutedEventArgs e)
@@ -177,6 +266,23 @@ namespace DriveNow.Views
                     return;
                 }
 
+                string rutaGuardada = string.Empty;
+
+                if (!string.IsNullOrEmpty(_rutaFotoSeleccionada))
+                {
+                    rutaGuardada = CopiarImagenACarpetaLocal(_rutaFotoSeleccionada, patente);
+                }
+                else
+                {
+                    string nombreCategoria = (cmbCategoria.SelectedItem as Categoria)?.Nombre ?? string.Empty;
+                    rutaGuardada = ObtenerFotoPorDefectoSegunModeloYCategoria(txtModelo.Text.Trim(), nombreCategoria);
+
+                    if (string.IsNullOrEmpty(rutaGuardada) && _vehiculoEnEdicion != null)
+                    {
+                        rutaGuardada = _vehiculoEnEdicion.ImagenUrl ?? string.Empty;
+                    }
+                }
+
                 if (_vehiculoEnEdicion == null)
                 {
                     var nuevo = new Vehiculo
@@ -187,6 +293,7 @@ namespace DriveNow.Views
                         Anio = anio,
                         IdCategoria = idCat,
                         IdEstado = idEst,
+                        ImagenUrl = rutaGuardada,
                         Activo = true
                     };
 
@@ -206,6 +313,7 @@ namespace DriveNow.Views
                         {
                             MessageBox.Show("No se pueden guardar los cambios porque el vehículo se encuentra alquilado.", "Acción Rechazada", MessageBoxButton.OK, MessageBoxImage.Warning);
                             ResetearFormularioFlota();
+                            modalOverlay.Visibility = Visibility.Collapsed;
                             await CargarFlotaDesdeBdAsync();
                             return;
                         }
@@ -216,12 +324,14 @@ namespace DriveNow.Views
                         vehiculoDb.Anio = anio;
                         vehiculoDb.IdCategoria = idCat;
                         vehiculoDb.IdEstado = idEst;
+                        if (!string.IsNullOrEmpty(rutaGuardada)) vehiculoDb.ImagenUrl = rutaGuardada;
 
                         await context.SaveChangesAsync();
                         MessageBox.Show("Vehículo actualizado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
 
+                modalOverlay.Visibility = Visibility.Collapsed;
                 await CargarFlotaDesdeBdAsync();
                 ResetearFormularioFlota();
             }
@@ -254,12 +364,13 @@ namespace DriveNow.Views
                 txtAnio.Text = vehiculo.Anio.ToString();
                 cmbCategoria.SelectedValue = vehiculo.IdCategoria;
                 cmbEstado.SelectedValue = vehiculo.IdEstado;
+                lblFotoStatus.Text = !string.IsNullOrEmpty(vehiculo.ImagenUrl) ? Path.GetFileName(vehiculo.ImagenUrl) : "Sin foto";
 
                 lblTituloFormularioFlota.Text = $"✏️ Editando Vehículo: {vehiculo.MarcaModelo} ({vehiculo.Patente})";
                 btnGuardarVehiculo.Content = "Actualizar Cambios";
                 btnGuardarVehiculo.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
-                btnCancelarFlota.Visibility = Visibility.Visible;
-                btnLimpiarFlota.Visibility = Visibility.Collapsed;
+
+                modalOverlay.Visibility = Visibility.Visible;
             }
         }
 
@@ -283,7 +394,6 @@ namespace DriveNow.Views
                     var itemADesactivar = await context.Vehiculos.FindAsync(vehiculoSeleccionado.IdVehiculo);
                     if (itemADesactivar != null)
                     {
-                        // Borrado lógico
                         itemADesactivar.Activo = false;
                         await context.SaveChangesAsync();
 
@@ -292,9 +402,11 @@ namespace DriveNow.Views
                         if (_vehiculoEnEdicion?.IdVehiculo == vehiculoSeleccionado.IdVehiculo)
                         {
                             ResetearFormularioFlota();
+                            modalOverlay.Visibility = Visibility.Collapsed;
                         }
 
                         ActualizarMetricas();
+                        AplicarFiltrosFlota();
                         MessageBox.Show("Vehículo dado de baja exitosamente del inventario activo.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
@@ -305,10 +417,7 @@ namespace DriveNow.Views
             }
         }
 
-        private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            AplicarFiltrosFlota();
-        }
+        private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e) => AplicarFiltrosFlota();
 
         private void FiltroCombinado_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -326,14 +435,7 @@ namespace DriveNow.Views
         {
             if (sender is Border border && border.Tag is string estadoTag)
             {
-                if (_filtroEstado == estadoTag && estadoTag != "Todos")
-                {
-                    _filtroEstado = "Todos";
-                }
-                else
-                {
-                    _filtroEstado = estadoTag;
-                }
+                _filtroEstado = (_filtroEstado == estadoTag && estadoTag != "Todos") ? "Todos" : estadoTag;
 
                 _ignorarCambioFiltros = true;
                 if (_filtroEstado == "Todos")
@@ -372,7 +474,6 @@ namespace DriveNow.Views
 
             IEnumerable<Vehiculo> filtrados = _listaVehiculos;
 
-            // 1. Filtro por Estado
             if (!string.IsNullOrEmpty(_filtroEstado) && _filtroEstado != "Todos")
             {
                 if (_filtroEstado == "Mantenimiento" || _filtroEstado == "En Taller")
@@ -385,13 +486,11 @@ namespace DriveNow.Views
                 }
             }
 
-            // 2. Filtro por Categoría
             if (cmbFiltroCategoria != null && cmbFiltroCategoria.SelectedValue is int idCat && idCat > 0)
             {
                 filtrados = filtrados.Where(v => v.IdCategoria == idCat);
             }
 
-            // 3. Filtro por Texto (Patente, Marca, Modelo)
             string texto = txtBuscar?.Text.Trim().ToLower() ?? string.Empty;
             if (!string.IsNullOrEmpty(texto))
             {
@@ -402,7 +501,7 @@ namespace DriveNow.Views
             }
 
             var lista = filtrados.ToList();
-            dgvFlota.ItemsSource = lista;
+            icFlotaTarjetas.ItemsSource = lista;
             if (lblContadorFiltrados != null)
             {
                 lblContadorFiltrados.Text = $"Mostrando: {lista.Count} de {_listaVehiculos.Count} vehículos";
@@ -419,16 +518,12 @@ namespace DriveNow.Views
 
             cardFiltroTodos.BorderBrush = brushTransparente;
             cardFiltroTodos.Background = brushBgNormal;
-
             cardFiltroDisponibles.BorderBrush = brushTransparente;
             cardFiltroDisponibles.Background = brushBgNormal;
-
             cardFiltroAlquilados.BorderBrush = brushTransparente;
             cardFiltroAlquilados.Background = brushBgNormal;
-
             cardFiltroReservados.BorderBrush = brushTransparente;
             cardFiltroReservados.Background = brushBgNormal;
-
             cardFiltroMantenimiento.BorderBrush = brushTransparente;
             cardFiltroMantenimiento.Background = brushBgNormal;
 
@@ -450,7 +545,7 @@ namespace DriveNow.Views
                     cardFiltroMantenimiento.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F87171"));
                     cardFiltroMantenimiento.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#352227"));
                     break;
-                default: // "Todos"
+                default:
                     cardFiltroTodos.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#38BDF8"));
                     cardFiltroTodos.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1B2E42"));
                     break;
@@ -482,25 +577,22 @@ namespace DriveNow.Views
             _isFormatting = false;
         }
 
-        private void btnCancelarFlota_Click(object sender, RoutedEventArgs e) => ResetearFormularioFlota();
-        private void btnLimpiarFlota_Click(object sender, RoutedEventArgs e) => ResetearFormularioFlota();
-
         private void ResetearFormularioFlota()
         {
             _vehiculoEnEdicion = null;
+            _rutaFotoSeleccionada = string.Empty;
 
             txtPatente.Clear();
             txtMarca.Clear();
             txtModelo.Clear();
             txtAnio.Clear();
+            lblFotoStatus.Text = "Sin foto";
             if (cmbCategoria.Items.Count > 0) cmbCategoria.SelectedIndex = 0;
             if (cmbEstado.Items.Count > 0) cmbEstado.SelectedIndex = 0;
 
             lblTituloFormularioFlota.Text = "➕ Alta de vehículo";
-            btnGuardarVehiculo.Content = "Guardar";
+            btnGuardarVehiculo.Content = "Guardar Vehículo";
             btnGuardarVehiculo.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2563EB"));
-            btnCancelarFlota.Visibility = Visibility.Collapsed;
-            btnLimpiarFlota.Visibility = Visibility.Visible;
         }
     }
 }

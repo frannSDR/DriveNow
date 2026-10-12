@@ -8,23 +8,26 @@
             <RowDefinition Height="Auto"/>
             <!-- Encabezado y KPIs -->
             <RowDefinition Height="*"/>
-            <!-- Buscador y DataGrid -->
-            <RowDefinition Height="Auto"/>
-            <!-- Formulario de Alta / Edición -->
+            <!-- Catálogo de Tarjetas -->
         </Grid.RowDefinitions>
 
-        <!-- ENCABEZADO Y TARJETAS DE ESTADO -->
+        <!-- ENCABEZADO Y TARJETAS DE ESTADO (FILTRO RÁPIDO) -->
         <StackPanel Grid.Row="0" Margin="0,0,0,15">
             <DockPanel LastChildFill="False" Margin="0,0,0,15">
                 <StackPanel DockPanel.Dock="Left">
                     <TextBlock Text="Gestión de flota e inventario" FontSize="22" FontWeight="Bold" Foreground="White"/>
                     <TextBlock Text="Administra el inventario de vehículos, estados y asignaciones." FontSize="13" Foreground="#94A3B8"/>
                 </StackPanel>
+
+                <!-- BOTÓN PARA ABRIR MODAL NUEVO VEHÍCULO -->
+                <Button x:Name="btnNuevoVehiculo" Content="➕ Nuevo Vehículo" DockPanel.Dock="Right"
+                        Height="38" Padding="16,0" Background="#2563EB" Foreground="White" 
+                        FontWeight="Bold" BorderThickness="0" Cursor="Hand"
+                        Click="btnNuevoVehiculo_Click"/>
             </DockPanel>
 
-            <!-- TARJETAS DE ESTADO INTERACTIVAS (FILTRO RÁPIDO) -->
+            <!-- TARJETAS DE ESTADO INTERACTIVAS -->
             <UniformGrid Columns="5">
-                <!-- 0. Toda la Flota -->
                 <Border x:Name="cardFiltroTodos" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
                         Cursor="Hand" BorderThickness="2" BorderBrush="#38BDF8" Tag="Todos"
                         ToolTip="Ver toda la flota activa" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
@@ -34,7 +37,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 1. Disponibles -->
                 <Border x:Name="cardFiltroDisponibles" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
                         Cursor="Hand" BorderThickness="2" BorderBrush="Transparent" Tag="Disponible"
                         ToolTip="Filtrar vehículos disponibles para alquilar" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
@@ -44,7 +46,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 2. Alquilados -->
                 <Border x:Name="cardFiltroAlquilados" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
                         Cursor="Hand" BorderThickness="2" BorderBrush="Transparent" Tag="Alquilado"
                         ToolTip="Filtrar vehículos actualmente en alquiler" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
@@ -54,7 +55,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 3. Reservados -->
                 <Border x:Name="cardFiltroReservados" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
                         Cursor="Hand" BorderThickness="2" BorderBrush="Transparent" Tag="Reservado"
                         ToolTip="Filtrar vehículos con reserva confirmada" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
@@ -64,10 +64,9 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 4. Mantenimiento -->
                 <Border x:Name="cardFiltroMantenimiento" Background="#1E293B" CornerRadius="8" Padding="12,14" Margin="4"
                         Cursor="Hand" BorderThickness="2" BorderBrush="Transparent" Tag="Mantenimiento"
-                        ToolTip="Filtrar vehículos en taller o servicio mecánico" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
+                        ToolTip="Filtrar vehículos en servicio mecánico" MouseLeftButtonDown="CardFiltro_MouseLeftButtonDown">
                     <StackPanel>
                         <TextBlock Text="🔧 MANTENIMIENTO" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
                         <TextBlock x:Name="lblMantenimiento" Text="0" FontSize="24" FontWeight="Bold" Foreground="#F87171" Margin="0,4,0,0"/>
@@ -76,17 +75,16 @@
             </UniformGrid>
         </StackPanel>
 
-        <!-- SECCIÓN DE TABLA Y FILTROS -->
-        <Border Grid.Row="1" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+        <!-- SECCIÓN DE CONTENEDOR MÓDULO CATÁLOGO Y FILTROS -->
+        <Border Grid.Row="1" Background="#1E293B" CornerRadius="8" Padding="15">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Barra de Herramientas y Filtros Combinados -->
+                <!-- BARRA DE BÚSQUEDA Y FILTROS COMBINADOS -->
                 <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
-                    <!-- Buscador en tiempo real -->
                     <Grid DockPanel.Dock="Left" Width="260" Margin="0,0,12,0">
                         <TextBox x:Name="txtBuscar" Height="35"
                                  Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="10,7"
@@ -103,7 +101,6 @@
                         </TextBlock>
                     </Grid>
 
-                    <!-- Selector de Categoría -->
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
                         <TextBlock Text="Categoría:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
                         <ComboBox x:Name="cmbFiltroCategoria" Width="165" Height="35"
@@ -111,14 +108,12 @@
                                   SelectionChanged="FiltroCombinado_SelectionChanged"/>
                     </StackPanel>
 
-                    <!-- Selector de Estado -->
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
                         <TextBlock Text="Estado:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
                         <ComboBox x:Name="cmbFiltroEstado" Width="165" Height="35"
                                   SelectionChanged="FiltroCombinado_SelectionChanged"/>
                     </StackPanel>
 
-                    <!-- Indicador de Resultados y Botón Limpiar -->
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="lblContadorFiltrados" Text="Mostrando: 0 vehículos" Foreground="#38BDF8" FontSize="12" 
                                    VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="SemiBold"/>
@@ -128,163 +123,148 @@
                     </StackPanel>
                 </DockPanel>
 
-                <!-- DataGrid de Vehículos -->
-                <DataGrid x:Name="dgvFlota" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
-                          Background="Transparent" BorderThickness="0" RowHeight="42" IsReadOnly="True"
-                          HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single"
-                          SelectionUnit="FullRow" Foreground="White">
+                <!-- VISTA DE CATÁLOGO EN TARJETAS (CARDS) -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl x:Name="icFlotaTarjetas">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="3"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
 
-                    <DataGrid.Resources>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#1E3A8A"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#1E3A8A"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#FFFFFF"/>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#0F172A" CornerRadius="10" Margin="6" Padding="14" BorderBrush="#334155" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="140"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
 
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#0F172A"/>
-                            <Setter Property="Foreground" Value="#94A3B8"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="Height" Value="36"/>
-                            <Setter Property="Padding" Value="10,0"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                        </Style>
+                                        <Border Grid.Row="0" CornerRadius="6" ClipToBounds="True" Background="#1E293B" Margin="0,0,0,10">
+                                            <Image Source="{Binding ImagenMostrar}" Stretch="UniformToFill"/>
+                                        </Border>
 
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="Padding" Value="10,0"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="#1E3A8A"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
+                                        <StackPanel Grid.Row="1" Margin="0,0,0,8">
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock Text="{Binding MarcaModelo}" FontWeight="Bold" Foreground="White" FontSize="15" DockPanel.Dock="Left" TextTrimming="CharacterEllipsis" MaxWidth="180"/>
+                                                <Border Background="#1E293B" Padding="6,2" CornerRadius="4" DockPanel.Dock="Right">
+                                                    <TextBlock Text="{Binding Patente}" Foreground="#38BDF8" FontWeight="Bold" FontSize="11"/>
+                                                </Border>
+                                            </DockPanel>
+                                            <TextBlock Text="{Binding Categoria.Nombre}" Foreground="#94A3B8" FontSize="12" Margin="0,2,0,0"/>
+                                        </StackPanel>
 
-                        <Style TargetType="DataGridRow">
-                            <Setter Property="Background" Value="#1E293B"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#2A3A52"/>
-                                </Trigger>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="#1E3A8A"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.Resources>
+                                        <DockPanel Grid.Row="2" LastChildFill="False" Margin="0,0,0,12">
+                                            <Border DockPanel.Dock="Left" Background="#1E293B" Padding="8,3" CornerRadius="4">
+                                                <TextBlock Text="{Binding Anio, StringFormat='Año {0}'}" Foreground="#F8FAFC" FontSize="11"/>
+                                            </Border>
 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="PATENTE" Binding="{Binding Patente}" Width="120" FontWeight="Bold">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Margin" Value="16,0,0,0"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                            <DataGridTextColumn.HeaderStyle>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#0F172A"/>
-                                    <Setter Property="Foreground" Value="#94A3B8"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Height" Value="36"/>
-                                    <Setter Property="Padding" Value="16,0,10,0"/>
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                </Style>
-                            </DataGridTextColumn.HeaderStyle>
-                        </DataGridTextColumn>
+                                            <Border DockPanel.Dock="Right" Padding="8,3" CornerRadius="4" Background="#10B981">
+                                                <TextBlock Text="{Binding Estado.Nombre}" Foreground="White" FontWeight="Bold" FontSize="11"/>
+                                            </Border>
+                                        </DockPanel>
 
-                        <DataGridTextColumn Header="MARCA/MODELO" Binding="{Binding MarcaModelo}" Width="1.8*"/>
-                        <DataGridTextColumn Header="CATEGORÍA" Binding="{Binding Categoria.Nombre}" Width="1.5*"/>
-                        <DataGridTextColumn Header="AÑO" Binding="{Binding Anio}" Width="80"/>
-                        <DataGridTextColumn Header="ESTADO" Binding="{Binding Estado.Nombre}" Width="130"/>
+                                        <UniformGrid Grid.Row="3" Columns="2">
+                                            <Border CornerRadius="4" Margin="0,0,4,0" ClipToBounds="True">
+                                                <Button Content="✏️ Editar" Background="#1E293B" Foreground="#38BDF8" 
+                                                        Height="32" BorderThickness="0" Cursor="Hand"
+                                                        Click="btnEditarVehiculo_Click"/>
+                                            </Border>
 
-                        <!-- Columna de Acciones (Editar y Eliminar) -->
-                        <DataGridTemplateColumn x:Name="colAccionesFlota" Header="ACCIONES" Width="110">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <!-- Botón Editar -->
-                                        <Button Content="✏️" Background="Transparent" Foreground="#38BDF8" 
-                                                BorderThickness="0" Cursor="Hand" Margin="0,0,8,0"
-                                                ToolTip="Editar datos del vehículo"
-                                                Click="btnEditarVehiculo_Click"/>
-
-                                        <!-- Botón Eliminar -->
-                                        <Button Content="🗑️" Background="Transparent" Foreground="#F87171" 
-                                                BorderThickness="0" Cursor="Hand" 
-                                                ToolTip="Eliminar vehículo"
-                                                Click="btnEliminarFila_Click"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                                            <Border CornerRadius="4" Margin="4,0,0,0" ClipToBounds="True">
+                                                <Button Content="🗑️ Dar de Baja" Background="#1E293B" Foreground="#F87171" 
+                                                        Height="32" BorderThickness="0" Cursor="Hand"
+                                                        Click="btnEliminarFila_Click"/>
+                                            </Border>
+                                        </UniformGrid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </Grid>
         </Border>
 
-        <!-- FORMULARIO DE ALTA / EDICIÓN DE VEHÍCULO -->
-        <Border x:Name="pnlFormularioVehiculo" Grid.Row="2" Background="#1E293B" CornerRadius="8" Padding="15">
-            <StackPanel>
-                <TextBlock x:Name="lblTituloFormularioFlota" Text="➕ Alta de vehículo" 
-                           FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+        <!-- CAPA SUPERPUESTA MODAL (OVERLAY) PARA ALTA / EDICIÓN -->
+        <Grid x:Name="modalOverlay" Grid.RowSpan="2" Background="#B00F172A" Visibility="Collapsed">
+            <Border Width="650" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    Background="#1E293B" CornerRadius="12" Padding="20" BorderBrush="#334155" BorderThickness="1">
+                <StackPanel x:Name="pnlFormularioVehiculo">
+                    <DockPanel LastChildFill="False" Margin="0,0,0,15">
+                        <TextBlock x:Name="lblTituloFormularioFlota" Text="➕ Alta de vehículo" 
+                                   FontSize="18" FontWeight="Bold" Foreground="White" DockPanel.Dock="Left"/>
+                        <Button Content="❌" Background="Transparent" Foreground="#94A3B8" FontSize="14"
+                                BorderThickness="0" Cursor="Hand" DockPanel.Dock="Right"
+                                Click="btnCerrarModal_Click"/>
+                    </DockPanel>
 
-                <!-- Fila 1: Patente, Marca, Modelo -->
-                <UniformGrid Columns="3" Margin="0,0,0,10">
-                    <StackPanel Margin="0,0,8,0">
-                        <TextBlock Text="Patente" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <TextBox x:Name="txtPatente" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" TextChanged="txtPatente_TextChanged"/>
-                    </StackPanel>
-                    <StackPanel Margin="0,0,8,0">
-                        <TextBlock Text="Marca" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <TextBox x:Name="txtMarca" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
-                    </StackPanel>
-                    <StackPanel>
-                        <TextBlock Text="Modelo" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <TextBox x:Name="txtModelo" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
-                    </StackPanel>
-                </UniformGrid>
+                    <!-- Fila 1: Patente, Marca, Modelo -->
+                    <UniformGrid Columns="3" Margin="0,0,0,12">
+                        <StackPanel Margin="0,0,8,0">
+                            <TextBlock Text="Patente" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtPatente" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" TextChanged="txtPatente_TextChanged"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,8,0">
+                            <TextBlock Text="Marca" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtMarca" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Modelo" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtModelo" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                        </StackPanel>
+                    </UniformGrid>
 
-                <!-- Fila 2: Categoría, Año, Estado -->
-                <UniformGrid Columns="3" Margin="0,0,0,12">
-                    <StackPanel Margin="0,0,8,0">
-                        <TextBlock Text="Categoría" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <ComboBox x:Name="cmbCategoria" Height="35"
-                                  DisplayMemberPath="Nombre" SelectedValuePath="IdCategoria"/>
-                    </StackPanel>
-                    <StackPanel Margin="0,0,8,0">
-                        <TextBlock Text="Año" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <TextBox x:Name="txtAnio" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
-                    </StackPanel>
-                    <StackPanel>
-                        <TextBlock Text="Estado" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                        <ComboBox x:Name="cmbEstado" Height="35"
-                                  DisplayMemberPath="Nombre" SelectedValuePath="IdEstado"/>
-                    </StackPanel>
-                </UniformGrid>
+                    <!-- Fila 2: Categoría, Año, Estado y Foto -->
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                <!-- Botones Guardar / Cancelar -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="btnCancelarFlota" Content="Cancelar" Width="100" Height="35" 
-                            Background="#475569" Foreground="White" BorderThickness="0" 
-                            Margin="0,0,10,0" Cursor="Hand" Visibility="Collapsed" 
-                            Click="btnCancelarFlota_Click"/>
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Categoría" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="cmbCategoria" Height="35" DisplayMemberPath="Nombre" SelectedValuePath="IdCategoria"/>
+                        </StackPanel>
 
-                    <Button x:Name="btnLimpiarFlota" Content="Limpiar" Width="100" Height="35" 
-                            Background="#334155" Foreground="White" BorderThickness="0" 
-                            Margin="0,0,10,0" Cursor="Hand" 
-                            Click="btnLimpiarFlota_Click"/>
+                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                            <TextBlock Text="Año" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtAnio" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                        </StackPanel>
 
-                    <Button x:Name="btnGuardarVehiculo" Content="Guardar" Width="140" Height="35" 
-                            Background="#2563EB" Foreground="White" FontWeight="Bold" 
-                            BorderThickness="0" Cursor="Hand" 
-                            Click="btnGuardarVehiculo_Click"/>
+                        <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                            <TextBlock Text="Estado" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="cmbEstado" Height="35" DisplayMemberPath="Nombre" SelectedValuePath="IdEstado"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3">
+                            <TextBlock Text="Fotografía" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                            <DockPanel Height="35">
+                                <Button x:Name="btnAdjuntarFoto" Content="📷 Adjuntar" Width="85" Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand" Click="btnAdjuntarFotoVehiculo_Click" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="lblFotoStatus" Text="Sin foto" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Botones Guardar / Cancelar -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="btnCancelarFlota" Content="Cancelar" Width="100" Height="35" 
+                                Background="#475569" Foreground="White" BorderThickness="0" 
+                                Margin="0,0,10,0" Cursor="Hand" 
+                                Click="btnCerrarModal_Click"/>
+
+                        <Button x:Name="btnGuardarVehiculo" Content="Guardar Vehículo" Width="150" Height="35" 
+                                Background="#2563EB" Foreground="White" FontWeight="Bold" 
+                                BorderThickness="0" Cursor="Hand" 
+                                Click="btnGuardarVehiculo_Click"/>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </Border>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

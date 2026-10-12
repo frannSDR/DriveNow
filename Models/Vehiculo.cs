@@ -36,6 +36,13 @@ namespace DriveNow.Models
         [NotMapped]
         public string? FotoPortada => Fotos?.FirstOrDefault(f => f.EsPrincipal)?.RutaFoto ?? Fotos?.FirstOrDefault()?.RutaFoto;
 
+        public string? ImagenUrl { get; set; }
+
+        [NotMapped]
+        public string ImagenMostrar => !string.IsNullOrEmpty(ImagenUrl) && System.IO.File.Exists(ImagenUrl)
+            ? ImagenUrl
+            : "pack://application:,,,/Resources/car_placeholder.png"; // O una imagen por defecto
+
         [NotMapped]
         public string MarcaModelo => $"{Marca} {Modelo}";
     }

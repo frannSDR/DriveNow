@@ -51,7 +51,7 @@ namespace DriveNow.Services
                                 brand.Item().Text("DRIVE NOW").FontSize(24).Bold().FontColor("#1E3A8A");
                                 brand.Item().Text("ALQUILER Y GESTIÓN INTELIGENTE DE FLOTA").FontSize(8).Bold().FontColor("#64748B");
                                 brand.Item().PaddingTop(4).Text("DriveNow Argentina S.A.  •  CUIT: 30-71894523-4").FontSize(8.5f).FontColor("#475569");
-                                brand.Item().Text("Av. del Libertador 4500, CABA  •  Tel: +54 (11) 5234-8900").FontSize(8.5f).FontColor("#475569");
+                                brand.Item().Text("Av. 3 de Abril 4500, Ctes. Capital  •  Tel: +54 (0379) 4345690").FontSize(8.5f).FontColor("#475569");
                                 brand.Item().Text("contacto@drivenow.com.ar  •  www.drivenow.com.ar").FontSize(8.5f).FontColor("#475569");
                             });
 
