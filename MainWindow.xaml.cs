@@ -13,8 +13,17 @@ namespace DriveNow
         {
             InitializeComponent();
             ConfigurarPermisosSegunRol();
-            ContenedorPrincipal.Content = new DashboardView();
-            ActualizarBotonActivo(btnNavDashboard);
+
+            if (UserSession.Current.RolActual == RolUsuario.Mecanico)
+            {
+                ContenedorPrincipal.Content = new TallerView();
+                ActualizarBotonActivo(btnNavTaller);
+            }
+            else
+            {
+                ContenedorPrincipal.Content = new DashboardView();
+                ActualizarBotonActivo(btnNavDashboard);
+            }
         }
 
         private void ConfigurarPermisosSegunRol()
@@ -32,10 +41,11 @@ namespace DriveNow
                     btnNavReservas.Visibility = Visibility.Visible;
                     btnNavAlquileres.Visibility = Visibility.Visible;
                     btnNavFlota.Visibility = Visibility.Visible;
-                    btnNavMisOperaciones.Visibility = Visibility.Visible; // Activo para el Operador
+                    btnNavMisOperaciones.Visibility = Visibility.Visible;
                     btnNavReportes.Visibility = Visibility.Collapsed;
                     btnNavUsuarios.Visibility = Visibility.Collapsed;
                     btnNavCategorias.Visibility = Visibility.Collapsed;
+                    btnNavTaller.Visibility = Visibility.Collapsed;
                     break;
 
                 case RolUsuario.Administrador:
@@ -48,6 +58,7 @@ namespace DriveNow
                     btnNavReportes.Visibility = Visibility.Visible;
                     btnNavUsuarios.Visibility = Visibility.Visible;
                     btnNavCategorias.Visibility = Visibility.Visible;
+                    btnNavTaller.Visibility = Visibility.Visible;
                     break;
 
                 case RolUsuario.Dueno:
@@ -57,21 +68,23 @@ namespace DriveNow
                     btnNavClientes.Visibility = Visibility.Collapsed;
                     btnNavReservas.Visibility = Visibility.Collapsed;
                     btnNavAlquileres.Visibility = Visibility.Collapsed;
-                    btnNavMisOperaciones.Visibility = Visibility.Collapsed; // El Dueño no opera alquileres directos
+                    btnNavMisOperaciones.Visibility = Visibility.Collapsed;
                     btnNavUsuarios.Visibility = Visibility.Collapsed;
                     btnNavCategorias.Visibility = Visibility.Collapsed;
+                    btnNavTaller.Visibility = Visibility.Collapsed;
                     break;
 
-                case RolUsuario.SuperAdmin:
-                    btnNavDashboard.Visibility = Visibility.Visible;
-                    btnNavFlota.Visibility = Visibility.Visible;
-                    btnNavClientes.Visibility = Visibility.Visible;
-                    btnNavReservas.Visibility = Visibility.Visible;
-                    btnNavAlquileres.Visibility = Visibility.Visible;
-                    btnNavMisOperaciones.Visibility = Visibility.Visible;
-                    btnNavReportes.Visibility = Visibility.Visible;
-                    btnNavUsuarios.Visibility = Visibility.Visible;
-                    btnNavCategorias.Visibility = Visibility.Visible;
+                case RolUsuario.Mecanico:
+                    btnNavDashboard.Visibility = Visibility.Collapsed;
+                    btnNavFlota.Visibility = Visibility.Collapsed;
+                    btnNavClientes.Visibility = Visibility.Collapsed;
+                    btnNavReservas.Visibility = Visibility.Collapsed;
+                    btnNavAlquileres.Visibility = Visibility.Collapsed;
+                    btnNavMisOperaciones.Visibility = Visibility.Collapsed;
+                    btnNavReportes.Visibility = Visibility.Collapsed;
+                    btnNavUsuarios.Visibility = Visibility.Collapsed;
+                    btnNavCategorias.Visibility = Visibility.Collapsed;
+                    btnNavTaller.Visibility = Visibility.Visible;
                     break;
             }
         }
@@ -81,7 +94,7 @@ namespace DriveNow
             Button[] botones = {
                 btnNavDashboard, btnNavFlota, btnNavClientes,
                 btnNavReservas, btnNavAlquileres, btnNavMisOperaciones,
-                btnNavReportes, btnNavUsuarios, btnNavCategorias, btnNavCuenta
+                btnNavReportes, btnNavUsuarios, btnNavCategorias, btnNavTaller, btnNavCuenta
             };
 
             foreach (Button btn in botones)
@@ -127,7 +140,7 @@ namespace DriveNow
         }
 
         private void btnNavReportes_Click(object sender, RoutedEventArgs e)
-        {
+        { 
             ContenedorPrincipal.Content = new ReportesView();
             ActualizarBotonActivo(btnNavReportes);
         }
@@ -148,6 +161,12 @@ namespace DriveNow
         {
             ContenedorPrincipal.Content = new CategoriasView();
             ActualizarBotonActivo(btnNavCategorias);
+        }
+
+        private void btnNavTaller_Click(object sender, RoutedEventArgs e)
+        {
+            ContenedorPrincipal.Content = new TallerView();
+            ActualizarBotonActivo(btnNavTaller);
         }
 
         private void btnCerrarSesion_Click(object sender, RoutedEventArgs e)

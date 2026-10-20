@@ -547,7 +547,26 @@ namespace DriveNow.Views
                 if (alquilerDb.Reserva?.Vehiculo != null && estadoObj != null)
                 {
                     var vehiculo = await context.Vehiculos.FindAsync(alquilerDb.Reserva.Vehiculo.IdVehiculo);
-                    if (vehiculo != null) vehiculo.IdEstado = estadoObj.IdEstado;
+                    if (vehiculo != null)
+                    {
+                        vehiculo.IdEstado = estadoObj.IdEstado;
+
+                        if (inmovilizado)
+                        {
+                            var nuevoMantenimiento = new Mantenimiento
+                            {
+                                IdVehiculo = vehiculo.IdVehiculo,
+                                FechaIngreso = DateTime.Now,
+                                Tipo = "Siniestro / Reparación de Daño",
+                                Motivo = _danoPendienteDevolucion != null
+                                    ? $"{_danoPendienteDevolucion.Sector} ({_danoPendienteDevolucion.Gravedad}): {_danoPendienteDevolucion.Descripcion}"
+                                    : "Vehículo derivado a taller por daños en check-in",
+                                Estado = "En Taller",
+                                Costo = 0
+                            };
+                            context.Mantenimientos.Add(nuevoMantenimiento);
+                        }
+                    }
                 }
 
                 await context.SaveChangesAsync();

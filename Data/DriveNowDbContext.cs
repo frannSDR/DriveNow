@@ -21,6 +21,7 @@ namespace DriveNow.Data
         public DbSet<Reserva> Reservas { get; set; }
         public DbSet<Alquiler> Alquileres { get; set; }
         public DbSet<Dano> Danos { get; set; }
+        public DbSet<Mantenimiento> Mantenimientos { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -123,6 +123,7 @@
                     <Button x:Name="btnNavReportes" Content="📈   Reportes y Finanzas" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavReportes_Click"/>
                     <Button x:Name="btnNavUsuarios" Content="🛡️   Gestión de Personal" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavUsuarios_Click"/>
                     <Button x:Name="btnNavCategorias" Content="🏷️   Tarifas y Categorías" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavCategorias_Click"/>
+                    <Button x:Name="btnNavTaller" Content="🔧   Taller y Mantenimiento" Style="{StaticResource SidebarNavButtonStyle}" Click="btnNavTaller_Click"/>
                 </StackPanel>
 
                 <!-- Sección Inferior -->

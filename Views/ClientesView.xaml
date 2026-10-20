@@ -230,15 +230,43 @@
                                         <Button Content="🗑️" Background="Transparent" Foreground="#F87171" 
                                                 BorderThickness="0" Cursor="Hand" 
                                                 ToolTip="Dar de baja cliente"
-                                                Visibility="{Binding Activo, Converter={StaticResource BoolToVisConverter}}"
-                                                Click="btnEliminarCliente_Click"/>
+                                                Click="btnEliminarCliente_Click">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding Activo}" Value="True"/>
+                                                                <Condition Binding="{Binding DataContext.PuedeEliminarOReactivarCliente, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
 
                                         <Button Content="♻️ Reactivar" Height="25" Padding="8,2"
                                                 Background="#065F46" Foreground="#34D399" FontWeight="Bold" FontSize="11"
                                                 BorderThickness="0" Cursor="Hand" 
                                                 ToolTip="Reactivar e incorporar al padrón activo"
-                                                Visibility="{Binding Activo, Converter={StaticResource InverseBoolToVisConverter}}"
-                                                Click="btnReactivarCliente_Click"/>
+                                                Click="btnReactivarCliente_Click">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding Activo}" Value="False"/>
+                                                                <Condition Binding="{Binding DataContext.PuedeEliminarOReactivarCliente, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

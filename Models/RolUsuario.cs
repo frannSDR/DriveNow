@@ -8,7 +8,7 @@ namespace DriveNow.Models
     {
         Administrador = 1,
         Operador = 2,
-        SuperAdmin = 3,
+        Mecanico = 3,
         Dueno = 4,
     }
 }

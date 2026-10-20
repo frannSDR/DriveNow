@@ -3,6 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="#0F172A">
 
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </UserControl.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -137,14 +141,14 @@
                                 <Border Background="#0F172A" CornerRadius="10" Margin="6" Padding="14" BorderBrush="#334155" BorderThickness="1">
                                     <Grid>
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="140"/>
+                                            <RowDefinition Height="160"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
 
                                         <Border Grid.Row="0" CornerRadius="6" ClipToBounds="True" Background="#1E293B" Margin="0,0,0,10">
-                                            <Image Source="{Binding ImagenMostrar}" Stretch="UniformToFill"/>
+                                            <Image Source="{Binding ImagenMostrar}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                         </Border>
 
                                         <StackPanel Grid.Row="1" Margin="0,0,0,8">
@@ -174,7 +178,8 @@
                                                         Click="btnEditarVehiculo_Click"/>
                                             </Border>
 
-                                            <Border CornerRadius="4" Margin="4,0,0,0" ClipToBounds="True">
+                                            <Border CornerRadius="4" Margin="4,0,0,0" ClipToBounds="True"
+                                                    Visibility="{Binding Path=DataContext.PuedeEliminarVehiculo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisConverter}}">
                                                 <Button Content="🗑️ Dar de Baja" Background="#1E293B" Foreground="#F87171" 
                                                         Height="32" BorderThickness="0" Cursor="Hand"
                                                         Click="btnEliminarFila_Click"/>
@@ -210,11 +215,11 @@
                         </StackPanel>
                         <StackPanel Margin="0,0,8,0">
                             <TextBlock Text="Marca" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtMarca" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBox x:Name="txtMarca" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" TextChanged="txtModeloOMarca_TextChanged"/>
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text="Modelo" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <TextBox x:Name="txtModelo" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6"/>
+                            <TextBox x:Name="txtModelo" Height="35" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="8,6" TextChanged="txtModeloOMarca_TextChanged"/>
                         </StackPanel>
                     </UniformGrid>
 
@@ -229,7 +234,7 @@
 
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <TextBlock Text="Categoría" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                            <ComboBox x:Name="cmbCategoria" Height="35" DisplayMemberPath="Nombre" SelectedValuePath="IdCategoria"/>
+                            <ComboBox x:Name="cmbCategoria" Height="35" DisplayMemberPath="Nombre" SelectedValuePath="IdCategoria" SelectionChanged="cmbCategoria_SelectionChanged"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="0,0,8,0">

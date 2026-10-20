@@ -180,35 +180,57 @@ namespace DriveNow.Views
             }
         }
 
-        private string ObtenerFotoPorDefectoSegunModeloYCategoria(string modelo, string categoria)
+        private string ObtenerFotoPorDefectoSegunModeloYCategoria(string marca, string modelo, string categoria)
         {
             try
             {
-                string carpetaModelos = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Modelos");
-
-                if (!Directory.Exists(carpetaModelos))
+                var carpetasPosibles = new List<string>
                 {
-                    Directory.CreateDirectory(carpetaModelos);
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Modelos"),
+                    Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets", "Modelos")),
+                    Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Modelos")
+                };
+
+                string? carpetaModelos = carpetasPosibles.FirstOrDefault(d => Directory.Exists(d) && Directory.GetFiles(d).Length > 0);
+
+                if (string.IsNullOrEmpty(carpetaModelos))
+                {
                     return string.Empty;
                 }
 
+                string textoBusqueda = "$marca $modelo".ToLower().Trim();
                 string modeloLimpio = modelo.ToLower().Trim();
                 string categoriaLimpia = categoria.ToLower().Trim();
 
-                var archivos = Directory.GetFiles(carpetaModelos, "*.*")
-                    .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                                f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                                f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase));
+                var extensionesValidas = new[] { ".jpg", ".jpeg", ".png", ".webp", ".bmp" };
 
+                var archivos = Directory.GetFiles(carpetaModelos, "*.*")
+                    .Where(f => extensionesValidas.Contains(Path.GetExtension(f).ToLower()))
+                    .ToList();
+
+                // 1. Coincidencia por Modelo o Marca+Modelo (bidireccional: ej. corolla en corolla xei, o 208 en peugeot 208)
                 if (!string.IsNullOrEmpty(modeloLimpio))
                 {
-                    var fotoModelo = archivos.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).ToLower().Contains(modeloLimpio));
+                    var fotoModelo = archivos.FirstOrDefault(f =>
+                    {
+                        string nombreSinExt = Path.GetFileNameWithoutExtension(f).ToLower().Trim();
+                        return modeloLimpio.Contains(nombreSinExt) ||
+                               nombreSinExt.Contains(modeloLimpio) ||
+                               textoBusqueda.Contains(nombreSinExt);
+                    });
+
                     if (!string.IsNullOrEmpty(fotoModelo)) return fotoModelo;
                 }
 
+                // 2. Coincidencia por Categoría
                 if (!string.IsNullOrEmpty(categoriaLimpia))
                 {
-                    var fotoCategoria = archivos.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).ToLower().Contains(categoriaLimpia));
+                    var fotoCategoria = archivos.FirstOrDefault(f =>
+                    {
+                        string nombreSinExt = Path.GetFileNameWithoutExtension(f).ToLower().Trim();
+                        return categoriaLimpia.Contains(nombreSinExt) || nombreSinExt.Contains(categoriaLimpia);
+                    });
+
                     if (!string.IsNullOrEmpty(fotoCategoria)) return fotoCategoria;
                 }
             }
@@ -218,6 +240,48 @@ namespace DriveNow.Views
             }
 
             return string.Empty;
+        }
+
+        private void ActualizarDeteccionFotoAutomatica()
+        {
+            if (!string.IsNullOrEmpty(_rutaFotoSeleccionada))
+            {
+                lblFotoStatus.Text = Path.GetFileName(_rutaFotoSeleccionada);
+                lblFotoStatus.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#38BDF8"));
+                return;
+            }
+
+            string nombreCategoria = (cmbCategoria?.SelectedItem as Categoria)?.Nombre ?? string.Empty;
+            string fotoAuto = ObtenerFotoPorDefectoSegunModeloYCategoria(txtMarca?.Text?.Trim() ?? "", txtModelo?.Text?.Trim() ?? "", nombreCategoria);
+
+            if (!string.IsNullOrEmpty(fotoAuto))
+            {
+                lblFotoStatus.Text = "$📸 Auto: " + Path.GetFileName(fotoAuto);
+                lblFotoStatus.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#34D399"));
+            }
+            else
+            {
+                if (_vehiculoEnEdicion != null && !string.IsNullOrEmpty(_vehiculoEnEdicion.ImagenUrl))
+                {
+                    lblFotoStatus.Text = Path.GetFileName(_vehiculoEnEdicion.ImagenUrl);
+                    lblFotoStatus.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8"));
+                }
+                else
+                {
+                    lblFotoStatus.Text = "Sin foto";
+                    lblFotoStatus.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8"));
+                }
+            }
+        }
+
+        private void txtModeloOMarca_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ActualizarDeteccionFotoAutomatica();
+        }
+
+        private void cmbCategoria_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ActualizarDeteccionFotoAutomatica();
         }
 
         private async void btnGuardarVehiculo_Click(object sender, RoutedEventArgs e)
@@ -275,7 +339,7 @@ namespace DriveNow.Views
                 else
                 {
                     string nombreCategoria = (cmbCategoria.SelectedItem as Categoria)?.Nombre ?? string.Empty;
-                    rutaGuardada = ObtenerFotoPorDefectoSegunModeloYCategoria(txtModelo.Text.Trim(), nombreCategoria);
+                    string fotoAuto = ObtenerFotoPorDefectoSegunModeloYCategoria(txtMarca.Text.Trim(), txtModelo.Text.Trim(), nombreCategoria); if (!string.IsNullOrEmpty(fotoAuto)) rutaGuardada = CopiarImagenACarpetaLocal(fotoAuto, patente); else if (_vehiculoEnEdicion != null) rutaGuardada = _vehiculoEnEdicion.ImagenUrl ?? string.Empty;
 
                     if (string.IsNullOrEmpty(rutaGuardada) && _vehiculoEnEdicion != null)
                     {
@@ -365,6 +429,7 @@ namespace DriveNow.Views
                 cmbCategoria.SelectedValue = vehiculo.IdCategoria;
                 cmbEstado.SelectedValue = vehiculo.IdEstado;
                 lblFotoStatus.Text = !string.IsNullOrEmpty(vehiculo.ImagenUrl) ? Path.GetFileName(vehiculo.ImagenUrl) : "Sin foto";
+                ActualizarDeteccionFotoAutomatica();
 
                 lblTituloFormularioFlota.Text = $"✏️ Editando Vehículo: {vehiculo.MarcaModelo} ({vehiculo.Patente})";
                 btnGuardarVehiculo.Content = "Actualizar Cambios";
