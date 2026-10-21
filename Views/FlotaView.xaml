@@ -127,63 +127,161 @@
                     </StackPanel>
                 </DockPanel>
 
-                <!-- VISTA DE CATÁLOGO EN TARJETAS (CARDS) -->
+                <!-- ============================================================ -->
+                <!-- VISTA DE CATÁLOGO EN TARJETAS (CARDS) — REDISEÑO             -->
+                <!-- ============================================================ -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl x:Name="icFlotaTarjetas">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <UniformGrid Columns="3"/>
+                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
 
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#0F172A" CornerRadius="10" Margin="6" Padding="14" BorderBrush="#334155" BorderThickness="1">
+                                <Border Width="360"
+                                        Background="#0F172A"
+                                        CornerRadius="12"
+                                        Margin="8"
+                                        BorderBrush="#334155"
+                                        BorderThickness="1"
+                                        Cursor="Hand">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="BorderBrush" Value="#38BDF8"/>
+                                                    <Setter Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <TranslateTransform Y="-2"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Setter Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.45" Color="#000000"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
                                     <Grid>
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="160"/>
-                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="200"/>
+                                            <!-- Imagen más alta -->
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
 
-                                        <Border Grid.Row="0" CornerRadius="6" ClipToBounds="True" Background="#1E293B" Margin="0,0,0,10">
-                                            <Image Source="{Binding ImagenMostrar}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <!-- IMAGEN: llena el contenedor, recorta leve si es necesario -->
+                                        <Border Grid.Row="0"
+                                                CornerRadius="12,12,0,0"
+                                                ClipToBounds="True"
+                                                Background="#1E293B">
+                                            <Grid>
+                                                <Image Source="{Binding ImagenMostrar}"
+                                                       Stretch="UniformToFill"
+                                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+
+                                                <!-- Degradado inferior para legibilidad del badge/patente -->
+                                                <Border VerticalAlignment="Bottom" Height="70">
+                                                    <Border.Background>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                            <GradientStop Color="#00000000" Offset="0"/>
+                                                            <GradientStop Color="#CC0F172A" Offset="1"/>
+                                                        </LinearGradientBrush>
+                                                    </Border.Background>
+                                                </Border>
+
+                                                <!-- BADGE DE ESTADO flotando sobre la imagen -->
+                                                <Border HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Margin="10"
+                                                        Padding="10,4"
+                                                        CornerRadius="20">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#10B981"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Estado.Nombre}" Value="Alquilado">
+                                                                    <Setter Property="Background" Value="#FBBF24"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado.Nombre}" Value="Reservado">
+                                                                    <Setter Property="Background" Value="#60A5FA"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado.Nombre}" Value="En Taller">
+                                                                    <Setter Property="Background" Value="#F87171"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado.Nombre}" Value="Mantenimiento">
+                                                                    <Setter Property="Background" Value="#F87171"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding Estado.Nombre}"
+                                                               Foreground="White"
+                                                               FontWeight="Bold"
+                                                               FontSize="11"/>
+                                                </Border>
+
+                                                <!-- Patente flotando abajo a la izquierda -->
+                                                <Border HorizontalAlignment="Left"
+                                                        VerticalAlignment="Bottom"
+                                                        Margin="12"
+                                                        Padding="8,4"
+                                                        CornerRadius="4"
+                                                        Background="#CC1E293B">
+                                                    <TextBlock Text="{Binding Patente}"
+                                                               Foreground="#38BDF8"
+                                                               FontWeight="Bold"
+                                                               FontSize="12"/>
+                                                </Border>
+                                            </Grid>
                                         </Border>
 
-                                        <StackPanel Grid.Row="1" Margin="0,0,0,8">
-                                            <DockPanel LastChildFill="False">
-                                                <TextBlock Text="{Binding MarcaModelo}" FontWeight="Bold" Foreground="White" FontSize="15" DockPanel.Dock="Left" TextTrimming="CharacterEllipsis" MaxWidth="180"/>
-                                                <Border Background="#1E293B" Padding="6,2" CornerRadius="4" DockPanel.Dock="Right">
-                                                    <TextBlock Text="{Binding Patente}" Foreground="#38BDF8" FontWeight="Bold" FontSize="11"/>
-                                                </Border>
+                                        <!-- INFO: marca/modelo + categoría + año -->
+                                        <StackPanel Grid.Row="1" Margin="14,12,14,8">
+                                            <TextBlock Text="{Binding MarcaModelo}"
+                                                       FontWeight="Bold"
+                                                       Foreground="White"
+                                                       FontSize="16"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <DockPanel LastChildFill="False" Margin="0,4,0,0">
+                                                <TextBlock Text="{Binding Categoria.Nombre}"
+                                                           Foreground="#94A3B8"
+                                                           FontSize="12"
+                                                           DockPanel.Dock="Left"/>
+                                                <TextBlock Text="{Binding Anio, StringFormat='• Año {0}'}"
+                                                           Foreground="#64748B"
+                                                           FontSize="12"
+                                                           DockPanel.Dock="Right"/>
                                             </DockPanel>
-                                            <TextBlock Text="{Binding Categoria.Nombre}" Foreground="#94A3B8" FontSize="12" Margin="0,2,0,0"/>
                                         </StackPanel>
 
-                                        <DockPanel Grid.Row="2" LastChildFill="False" Margin="0,0,0,12">
-                                            <Border DockPanel.Dock="Left" Background="#1E293B" Padding="8,3" CornerRadius="4">
-                                                <TextBlock Text="{Binding Anio, StringFormat='Año {0}'}" Foreground="#F8FAFC" FontSize="11"/>
-                                            </Border>
+                                        <!-- BOTONES -->
+                                        <UniformGrid Grid.Row="2" Columns="2" Margin="10,0,10,12">
+                                            <Button Content="✏️ Editar"
+                                                    Style="{StaticResource FlatButtonStyle}"
+                                                    Background="#1E293B"
+                                                    Foreground="#38BDF8"
+                                                    Height="34"
+                                                    Margin="0,0,5,0"
+                                                    Click="btnEditarVehiculo_Click"/>
 
-                                            <Border DockPanel.Dock="Right" Padding="8,3" CornerRadius="4" Background="#10B981">
-                                                <TextBlock Text="{Binding Estado.Nombre}" Foreground="White" FontWeight="Bold" FontSize="11"/>
-                                            </Border>
-                                        </DockPanel>
-
-                                        <UniformGrid Grid.Row="3" Columns="2">
-                                            <Border CornerRadius="4" Margin="0,0,4,0" ClipToBounds="True">
-                                                <Button Content="✏️ Editar" Background="#1E293B" Foreground="#38BDF8" 
-                                                        Height="32" BorderThickness="0" Cursor="Hand"
-                                                        Click="btnEditarVehiculo_Click"/>
-                                            </Border>
-
-                                            <Border CornerRadius="4" Margin="4,0,0,0" ClipToBounds="True"
-                                                    Visibility="{Binding Path=DataContext.PuedeEliminarVehiculo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisConverter}}">
-                                                <Button Content="🗑️ Dar de Baja" Background="#1E293B" Foreground="#F87171" 
-                                                        Height="32" BorderThickness="0" Cursor="Hand"
-                                                        Click="btnEliminarFila_Click"/>
-                                            </Border>
+                                            <Button Content="🗑️ Dar de Baja"
+                                                    Style="{StaticResource FlatButtonStyle}"
+                                                    Background="#1E293B"
+                                                    Foreground="#F87171"
+                                                    Height="34"
+                                                    Margin="5,0,0,0"
+                                                    Click="btnEliminarFila_Click"
+                                                    Visibility="{Binding Path=DataContext.PuedeEliminarVehiculo,
+                                                                RelativeSource={RelativeSource AncestorType=UserControl},
+                                                                Converter={StaticResource BoolToVisConverter}}"/>
                                         </UniformGrid>
                                     </Grid>
                                 </Border>

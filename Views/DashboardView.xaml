@@ -3,6 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="#0F172A">
 
+    <UserControl.Resources>
+        <!-- Badge de estado para el DataGrid -->
+        <Style x:Key="EstadoBadgeStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="#1E293B"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding EstadoTexto}" Value="En Curso 🔑">
+                    <Setter Property="Background" Value="#1E3A8A"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding EstadoTexto}" Value="Finalizado ✅">
+                    <Setter Property="Background" Value="#064E3B"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -13,63 +31,224 @@
             <!-- Alertas Operativas y Últimas Operaciones -->
         </Grid.RowDefinitions>
 
-        <!-- ENCABEZADO DE BIENVENIDA -->
-        <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="20,16" Margin="0,0,0,15">
+        <!-- ============================================================ -->
+        <!-- ENCABEZADO DE BIENVENIDA                                      -->
+        <!-- ============================================================ -->
+        <Border Grid.Row="0" Background="#1E293B" CornerRadius="10" Padding="20,16" Margin="0,0,0,15"
+                BorderBrush="#334155" BorderThickness="1">
             <DockPanel LastChildFill="False">
-                <StackPanel DockPanel.Dock="Left">
-                    <TextBlock x:Name="lblBienvenida" Text="Bienvenido de nuevo" FontSize="22" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock x:Name="lblSubtituloRol" Text="Resumen de actividad y estado operativo en tiempo real." FontSize="13" Foreground="#94A3B8" Margin="0,3,0,0"/>
+                <!-- Avatar + saludo -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <Border Width="48" Height="48" CornerRadius="24" Background="#2563EB" Margin="0,0,14,0">
+                        <TextBlock x:Name="lblAvatarInicial"
+                                   Text="U"
+                                   FontSize="20" FontWeight="Bold" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="lblBienvenida" Text="Bienvenido de nuevo" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock x:Name="lblSubtituloRol" Text="Resumen de actividad y estado operativo en tiempo real." FontSize="13" Foreground="#94A3B8" Margin="0,3,0,0"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <Border DockPanel.Dock="Right" Background="#0F172A" CornerRadius="6" Padding="12,8" BorderBrush="#334155" BorderThickness="1">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="📅" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="lblFechaActual" Text="Hoy" FontSize="12" FontWeight="SemiBold" Foreground="#38BDF8" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
+                <!-- Fecha + refresh -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnRefrescarDashboard"
+                            Content="🔄"
+                            FontSize="14"
+                            Width="36" Height="36"
+                            Background="#0F172A" Foreground="#38BDF8"
+                            BorderBrush="#334155" BorderThickness="1"
+                            Cursor="Hand" Margin="0,0,10,0"
+                            ToolTip="Refrescar datos"
+                            Click="btnRefrescarDashboard_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <Border Background="#0F172A" CornerRadius="6" Padding="12,8" BorderBrush="#334155" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📅" FontSize="14" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="lblFechaActual" Text="Hoy" FontSize="12" FontWeight="SemiBold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </DockPanel>
         </Border>
 
-        <!-- TARJETAS DE KPIS PRINCIPALES -->
+        <!-- ============================================================ -->
+        <!-- TARJETAS DE KPIS PRINCIPALES                                  -->
+        <!-- ============================================================ -->
         <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,15">
+
             <!-- 1. Vehículos Disponibles -->
-            <Border Background="#1E293B" CornerRadius="8" Padding="16" Margin="4">
-                <StackPanel>
-                    <TextBlock Text="🚗 FLOTA DISPONIBLE" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                    <TextBlock x:Name="lblKpiDisponibles" Text="0" FontSize="24" FontWeight="Bold" Foreground="#4ADE80" Margin="0,6,0,0"/>
-                    <TextBlock x:Name="lblKpiTotalFlota" Text="0 vehículos en flota" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
-                </StackPanel>
+            <Border Background="#1E293B" CornerRadius="10" Margin="4" BorderBrush="#334155" BorderThickness="1">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="#4ADE80"/>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform Y="-2"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border.RenderTransform>
+                    <TranslateTransform Y="0"/>
+                </Border.RenderTransform>
+                <Grid>
+                    <!-- Glow verde de fondo -->
+                    <Border Background="#4ADE80" Opacity="0.06" CornerRadius="10"/>
+                    <Grid Margin="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="46" Height="46" CornerRadius="10" Background="#0F2E20" Margin="0,0,12,0">
+                            <TextBlock Text="🚗" FontSize="22" Foreground="white" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="FLOTA DISPONIBLE" FontSize="10" FontWeight="Bold" Foreground="#94A3B8"/>
+                            <TextBlock x:Name="lblKpiDisponibles" Text="0" FontSize="26" FontWeight="Bold" Foreground="#4ADE80" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="lblKpiTotalFlota" Text="0 vehículos en flota" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
             </Border>
 
             <!-- 2. Alquileres en Curso -->
-            <Border Background="#1E293B" CornerRadius="8" Padding="16" Margin="4">
-                <StackPanel>
-                    <TextBlock Text="🔑 ALQUILERES ACTIVOS" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                    <TextBlock x:Name="lblKpiAlquileresActivos" Text="0" FontSize="24" FontWeight="Bold" Foreground="#38BDF8" Margin="0,6,0,0"/>
-                    <TextBlock Text="Vehículos en calle" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
-                </StackPanel>
+            <Border Background="#1E293B" CornerRadius="10" Margin="4" BorderBrush="#334155" BorderThickness="1">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="#38BDF8"/>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform Y="-2"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border.RenderTransform>
+                    <TranslateTransform Y="0"/>
+                </Border.RenderTransform>
+                <Grid>
+                    <Border Background="#38BDF8" Opacity="0.06" CornerRadius="10"/>
+                    <Grid Margin="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="46" Height="46" CornerRadius="10" Background="#0C2433" Margin="0,0,12,0">
+                            <TextBlock Text="🔑" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="ALQUILERES ACTIVOS" FontSize="10" FontWeight="Bold" Foreground="#94A3B8"/>
+                            <TextBlock x:Name="lblKpiAlquileresActivos" Text="0" FontSize="26" FontWeight="Bold" Foreground="#38BDF8" Margin="0,2,0,0"/>
+                            <TextBlock Text="Vehículos en calle" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
             </Border>
 
             <!-- 3. Reservas Próximas -->
-            <Border Background="#1E293B" CornerRadius="8" Padding="16" Margin="4">
-                <StackPanel>
-                    <TextBlock Text="📅 RESERVAS CONFIRMADAS" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                    <TextBlock x:Name="lblKpiReservasConfirmadas" Text="0" FontSize="24" FontWeight="Bold" Foreground="#FBBF24" Margin="0,6,0,0"/>
-                    <TextBlock Text="Pendientes de entrega" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
-                </StackPanel>
+            <Border Background="#1E293B" CornerRadius="10" Margin="4" BorderBrush="#334155" BorderThickness="1">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="#FBBF24"/>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform Y="-2"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border.RenderTransform>
+                    <TranslateTransform Y="0"/>
+                </Border.RenderTransform>
+                <Grid>
+                    <Border Background="#FBBF24" Opacity="0.06" CornerRadius="10"/>
+                    <Grid Margin="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="46" Height="46" CornerRadius="10" Background="#332B14" Margin="0,0,12,0">
+                            <TextBlock Text="📅" FontSize="22" Foreground="white" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="RESERVAS CONFIRMADAS" FontSize="10" FontWeight="Bold" Foreground="#94A3B8"/>
+                            <TextBlock x:Name="lblKpiReservasConfirmadas" Text="0" FontSize="26" FontWeight="Bold" Foreground="#FBBF24" Margin="0,2,0,0"/>
+                            <TextBlock Text="Pendientes de entrega" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
             </Border>
 
             <!-- 4. Facturación del Mes -->
-            <Border Background="#1E293B" CornerRadius="8" Padding="16" Margin="4">
-                <StackPanel>
-                    <TextBlock Text="💵 FACTURACIÓN DEL MES" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                    <TextBlock x:Name="lblKpiFacturacionMes" Text="$0.00" FontSize="22" FontWeight="Bold" Foreground="#A78BFA" Margin="0,6,0,0"/>
-                    <TextBlock Text="Total cobrado en curso" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
-                </StackPanel>
+            <Border Background="#1E293B" CornerRadius="10" Margin="4" BorderBrush="#334155" BorderThickness="1">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="#A78BFA"/>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform Y="-2"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border.RenderTransform>
+                    <TranslateTransform Y="0"/>
+                </Border.RenderTransform>
+                <Grid>
+                    <Border Background="#A78BFA" Opacity="0.06" CornerRadius="10"/>
+                    <Grid Margin="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="46" Height="46" CornerRadius="10" Background="#241E3D" Margin="0,0,12,0">
+                            <TextBlock Text="💵" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="FACTURACIÓN DEL MES" FontSize="10" FontWeight="Bold" Foreground="#94A3B8"/>
+                            <TextBlock x:Name="lblKpiFacturacionMes" Text="$0.00" FontSize="24" FontWeight="Bold" Foreground="#A78BFA" Margin="0,2,0,0"/>
+                            <TextBlock Text="Total cobrado en curso" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
             </Border>
         </UniformGrid>
 
-        <!-- SECCIÓN DE DETALLES: ALERTAS Y ÚLTIMOS CONTRATOS -->
+        <!-- ============================================================ -->
+        <!-- SECCIÓN DE DETALLES: ALERTAS Y ÚLTIMOS CONTRATOS              -->
+        <!-- ============================================================ -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.1*"/>
@@ -77,39 +256,77 @@
             </Grid.ColumnDefinitions>
 
             <!-- Panel de Alertas Operativas -->
-            <Border Grid.Column="0" Background="#1E293B" CornerRadius="8" Padding="16" Margin="0,0,8,0">
+            <Border Grid.Column="0" Background="#1E293B" CornerRadius="10" Padding="16" Margin="0,0,8,0"
+                    BorderBrush="#334155" BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="⚠️ Alertas Operativas" FontSize="14" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                    <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
+                        <TextBlock Text="⚠️" FontSize="16" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="Alertas Operativas" FontSize="14" FontWeight="Bold" Foreground="White" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+                    </DockPanel>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <StackPanel x:Name="pnlAlertasContenedor">
+
                             <!-- Alerta de Retraso / Mora -->
-                            <Border x:Name="cardAlertaMora" Background="#450A0A" BorderBrush="#7F1D1D" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,10" Visibility="Collapsed">
-                                <StackPanel>
-                                    <TextBlock Text="Alquileres con retraso" FontWeight="Bold" Foreground="#FCA5A5" FontSize="12"/>
-                                    <TextBlock x:Name="lblAlertaMoraDesc" Text="0 contratos superaron la fecha pactada." Foreground="#F87171" FontSize="11" Margin="0,2,0,0"/>
-                                </StackPanel>
+                            <Border x:Name="cardAlertaMora" Background="#450A0A" BorderBrush="#7F1D1D" BorderThickness="1"
+                                    CornerRadius="8" Padding="12" Margin="0,0,0,10" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="#7F1D1D" Margin="0,0,10,0">
+                                        <TextBlock Text="⏰" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Alquileres con retraso" FontWeight="Bold" Foreground="#FCA5A5" FontSize="12"/>
+                                        <TextBlock x:Name="lblAlertaMoraDesc" Text="0 contratos superaron la fecha pactada."
+                                                   Foreground="#F87171" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
 
                             <!-- Alerta de Taller -->
-                            <Border x:Name="cardAlertaTaller" Background="#2E1065" BorderBrush="#581C87" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,10" Visibility="Collapsed">
-                                <StackPanel>
-                                    <TextBlock Text="Vehículos en taller / daños" FontWeight="Bold" Foreground="#DDD6FE" FontSize="12"/>
-                                    <TextBlock x:Name="lblAlertaTallerDesc" Text="0 unidades no disponibles para alquilar." Foreground="#C4B5FD" FontSize="11" Margin="0,2,0,0"/>
-                                </StackPanel>
+                            <Border x:Name="cardAlertaTaller" Background="#2E1065" BorderBrush="#581C87" BorderThickness="1"
+                                    CornerRadius="8" Padding="12" Margin="0,0,0,10" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="#581C87" Margin="0,0,10,0">
+                                        <TextBlock Text="🔧" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Vehículos en taller / daños" FontWeight="Bold" Foreground="#DDD6FE" FontSize="12"/>
+                                        <TextBlock x:Name="lblAlertaTallerDesc" Text="0 unidades no disponibles para alquilar."
+                                                   Foreground="#C4B5FD" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
 
                             <!-- Mensaje si todo está en orden -->
-                            <Border x:Name="cardTodoOk" Background="#064E3B" BorderBrush="#065F46" BorderThickness="1" CornerRadius="6" Padding="12" Visibility="Visible">
-                                <StackPanel>
-                                    <TextBlock Text="✅ Operación Normal" FontWeight="Bold" Foreground="#6EE7B7" FontSize="12"/>
-                                    <TextBlock Text="No hay retrasos ni alertas críticas pendientes." Foreground="#A7F3D0" FontSize="11" Margin="0,2,0,0"/>
-                                </StackPanel>
+                            <Border x:Name="cardTodoOk" Background="#064E3B" BorderBrush="#065F46" BorderThickness="1"
+                                    CornerRadius="8" Padding="12" Visibility="Visible">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="#065F46" Margin="0,0,10,0">
+                                        <TextBlock Text="✅" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Operación Normal" FontWeight="Bold" Foreground="#6EE7B7" FontSize="12"/>
+                                        <TextBlock Text="No hay retrasos ni alertas críticas pendientes."
+                                                   Foreground="#A7F3D0" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
@@ -117,55 +334,86 @@
             </Border>
 
             <!-- Últimos Contratos y Movimientos -->
-            <Border Grid.Column="1" Background="#1E293B" CornerRadius="8" Padding="16" Margin="8,0,0,0">
+            <Border Grid.Column="1" Background="#1E293B" CornerRadius="10" Padding="16" Margin="8,0,0,0"
+                    BorderBrush="#334155" BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="Últimos Alquileres Registrados" FontSize="14" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                    <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
+                        <TextBlock Text="📋" FontSize="16" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="Últimos Alquileres Registrados" FontSize="14" FontWeight="Bold" Foreground="White" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+                    </DockPanel>
 
                     <DataGrid x:Name="dgvUltimosAlquileres" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
-                              Background="Transparent" BorderThickness="0" RowHeight="38" IsReadOnly="True"
+                              Background="Transparent" BorderThickness="0" RowHeight="44" IsReadOnly="True"
                               HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single"
                               SelectionUnit="FullRow" Foreground="White">
 
                         <DataGrid.Resources>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#1E3A8A"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF"/>
+
                             <Style TargetType="DataGridColumnHeader">
                                 <Setter Property="Background" Value="#0F172A"/>
                                 <Setter Property="Foreground" Value="#94A3B8"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter Property="Height" Value="34"/>
+                                <Setter Property="Height" Value="36"/>
                                 <Setter Property="Padding" Value="10,0"/>
                                 <Setter Property="BorderThickness" Value="0"/>
                             </Style>
+
                             <Style TargetType="DataGridCell">
                                 <Setter Property="BorderThickness" Value="0"/>
                                 <Setter Property="Padding" Value="10,0"/>
                                 <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                             </Style>
+
                             <Style TargetType="DataGridRow">
-                                <Setter Property="Background" Value="#1E293B"/>
+                                <Setter Property="Background" Value="Transparent"/>
                                 <Setter Property="BorderThickness" Value="0"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#2A3A52"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#1E3A8A"/>
+                                    </Trigger>
+                                </Style.Triggers>
                             </Style>
                         </DataGrid.Resources>
 
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="CONTRATO" Binding="{Binding CodigoAlquiler}" Width="90" FontWeight="Bold">
+                            <DataGridTextColumn Header="CONTRATO" Binding="{Binding CodigoAlquiler}" Width="100" FontWeight="Bold" Foreground="#38BDF8">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Margin" Value="12,0,0,0"/>
+                                        <Setter Property="Margin" Value="6,0,0,0"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
+
                             <DataGridTextColumn Header="CLIENTE" Binding="{Binding Cliente}" Width="1.3*"/>
-                            <DataGridTextColumn Header="VEHÍCULO" Binding="{Binding Vehiculo}" Width="1.2*"/>
-                            <DataGridTextColumn Header="SALIDA" Binding="{Binding FechaSalida, StringFormat=\{0:dd/MM/yyyy\}}" Width="100"/>
-                            <DataGridTextColumn Header="ESTADO" Binding="{Binding EstadoTexto}" Width="110" FontWeight="SemiBold"/>
+
+                            <DataGridTextColumn Header="VEHÍCULO" Binding="{Binding Vehiculo}" Width="1.3*" Foreground="#CBD5E1"/>
+
+                            <DataGridTextColumn Header="SALIDA" Binding="{Binding FechaSalida, StringFormat=\{0:dd/MM/yyyy\}}" Width="100" Foreground="#94A3B8"/>
+
+                            <DataGridTemplateColumn Header="ESTADO" Width="130">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource EstadoBadgeStyle}">
+                                            <TextBlock Text="{Binding EstadoTexto}"
+                                                       Foreground="White"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="11"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>

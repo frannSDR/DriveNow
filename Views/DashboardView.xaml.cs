@@ -26,6 +26,11 @@ namespace DriveNow.Views
             Loaded += async (s, e) => await CargarDashboardAsync();
         }
 
+        private async void btnRefrescarDashboard_Click(object sender, RoutedEventArgs e)
+        {
+            await CargarDashboardAsync();
+        }
+
         private async Task CargarDashboardAsync()
         {
             // 1. Saludo personalizado con el usuario activo
@@ -34,6 +39,16 @@ namespace DriveNow.Views
             {
                 lblBienvenida.Text = $"Hola, {usuario.Nombre} 👋";
                 lblSubtituloRol.Text = $"Sesión activa como: {usuario.Rol?.Nombre ?? "Personal"}";
+
+                // Inicial del avatar
+                if (!string.IsNullOrWhiteSpace(usuario.Nombre))
+                {
+                    lblAvatarInicial.Text = usuario.Nombre.Trim().Substring(0, 1).ToUpper();
+                }
+                else
+                {
+                    lblAvatarInicial.Text = "U";
+                }
             }
             lblFechaActual.Text = DateTime.Today.ToString("dddd, dd MMMM yyyy");
 
@@ -60,7 +75,7 @@ namespace DriveNow.Views
                 DateTime inicioMes = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
                 decimal facturacionMes = await context.Alquileres
                     .Where(a => a.FechaEntregaReal >= inicioMes)
-                    .SumAsync(a => a.CostoTotal + a.MontoMora); 
+                    .SumAsync(a => a.CostoTotal + a.MontoMora);
                 lblKpiFacturacionMes.Text = facturacionMes.ToString("C");
 
                 // 5. Gestión de Alertas Operativas
